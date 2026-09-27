@@ -2,7 +2,7 @@
 export const PHASES=Object.freeze(['landing','input','fork','formation','divergence','chapter','present','meeting','conversation','epilogue','share']);
 
 export function createJourney() {
-  return {phase:'landing',world:null,chapter:0,completed:[false,false],quick:false,chatTurns:0};
+  return {phase:'landing',world:null,chapter:0,completed:[false,false],quick:false,chatTurns:0,revisiting:false};
 }
 
 export function advance(state,event,payload) {
@@ -24,15 +24,15 @@ export function advance(state,event,payload) {
       next.phase='divergence'; return next;
     case 'ENTER_CHAPTERS':
       if (state.phase!=='divergence') break;
-      next.phase='chapter'; return next;
+      next.chapter=1; next.phase='chapter'; return next;
     case 'NEXT_CHAPTER':
       if (state.phase!=='chapter') break;
       if (state.chapter<5) next.chapter++;
-      else next.phase='present';
+      else next.phase=state.revisiting?'epilogue':'present';
       return next;
     case 'PREVIOUS_CHAPTER':
       if (state.phase!=='chapter') break;
-      if (state.chapter>0) next.chapter--;
+      if (state.chapter>1) next.chapter--;
       else next.phase='divergence';
       return next;
     case 'PRESENT_DONE':
@@ -47,11 +47,20 @@ export function advance(state,event,payload) {
     case 'CONVERSATION_DONE':
       if (state.phase!=='conversation') break;
       next.completed[state.world]=true; next.phase='epilogue'; return next;
+    case 'REENTER_CONVERSATION':
+      if (state.phase!=='epilogue' || !state.completed[state.world]) break;
+      next.phase='conversation'; return next;
+    case 'REVISIT_SCENE':
+      if (state.phase!=='epilogue' || !Array.isArray(payload) || ![0,1].includes(payload[0]) || !Number.isInteger(payload[1]) || payload[1]<0 || payload[1]>5 || !state.completed[payload[0]]) break;
+      next.world=payload[0]; next.chapter=payload[1]; next.revisiting=true; next.phase='chapter'; return next;
+    case 'RETURN_EPILOGUE':
+      if (state.phase!=='chapter' || !state.revisiting) break;
+      next.phase='epilogue'; next.revisiting=false; return next;
     case 'VIEW_OTHER': {
       if (state.phase!=='epilogue' || !state.completed[state.world]) break;
       const other=state.world===0?1:0;
       if (state.completed[other]) break;
-      next.world=other; next.chapter=0; next.phase='formation'; return next;
+      next.world=other; next.chapter=0; next.revisiting=false; next.phase='formation'; return next;
     }
     case 'SHARE':
       if (state.phase!=='epilogue') break;
