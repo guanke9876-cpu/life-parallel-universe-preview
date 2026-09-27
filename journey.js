@@ -1,5 +1,5 @@
 // Pure navigation contract for the cinematic UI. The story JSON stays separate.
-export const PHASES=Object.freeze(['landing','input','fork','formation','divergence','chapter','present','meeting','conversation','epilogue','share']);
+export const PHASES=Object.freeze(['landing','input','mirror','fork','formation','divergence','chapter','present','meeting','conversation','epilogue','share']);
 
 export function createJourney() {
   return {phase:'landing',world:null,chapter:0,completed:[false,false],quick:false,chatTurns:0,revisiting:false};
@@ -15,6 +15,9 @@ export function advance(state,event,payload) {
       next.quick=payload==='quick'; return next;
     case 'READY':
       if (state.phase!=='input') break;
+      next.phase='mirror'; return next;
+    case 'MIRRORS_DONE':
+      if (state.phase!=='mirror') break;
       next.phase='fork'; return next;
     case 'SELECT_WORLD':
       if (state.phase!=='fork' || ![0,1].includes(payload)) break;

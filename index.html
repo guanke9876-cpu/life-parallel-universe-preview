@@ -7,8 +7,8 @@
   <meta name="description" content="从一个选择出发，经历另一条假设中的人生。">
   <title>另一种人生 · Parallel You</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=cinematic-experience-1">
-  <script type="module" src="./app.js?v=conversation-home-1"></script>
+  <link rel="stylesheet" href="./styles.css?v=self-model-1">
+  <script type="module" src="./app.js?v=self-model-1"></script>
 </head>
 <body class="is-landing">
   <header class="site-header">
@@ -40,8 +40,20 @@
       </div>
     </section>
 
+    <section class="self-mirrors" id="self-mirrors" aria-labelledby="mirrors-title" hidden>
+      <div class="mirrors-intro"><p class="eyebrow">02 / THREE MIRRORS</p><h2 id="mirrors-title">在走向另一个你之前，<br>先换几个角度看看自己。</h2><p>这些镜头能提供不同语言，不能互相证明。所有开关只改变解释与呈现，不改变人生时间线的因果生成。</p></div>
+      <div class="mode-choice" role="group" aria-label="镜头模式"><button id="mode-reality" type="button">现实</button><button id="mode-psychology" type="button">心理</button><button id="mode-symbolic" type="button">命理</button><button id="mode-fusion" type="button">融合</button></div>
+      <p id="mirror-mode-note" class="mirror-mode-note"></p>
+      <div class="mirror-grid">
+        <article id="reality-mirror" class="mirror-card reality-mirror"><div class="mirror-card-head"><span class="mirror-number">01 · REALITY</span><label class="lens-switch"><input id="lens-reality" type="checkbox" checked> 展示</label></div><h3>现实中的你</h3><p id="mirror-reality-copy"></p><small>SELF_REPORT · 由你提供，未独立核实。决策事实仍是叙事输入。</small></article>
+        <article id="psychology-mirror" class="mirror-card psychology-mirror"><div class="mirror-card-head"><span class="mirror-number">02 · PSYCHOLOGY</span><div class="lens-switches"><label class="lens-switch"><input id="lens-big-five" type="checkbox"> Big Five</label><label class="lens-switch"><input id="lens-mbti" type="checkbox"> MBTI</label></div></div><h3>心理学里的你</h3><div id="psych-mirror-body"><p>20 道自评题，五个连续维度。只显示原始分数，不做诊断或人生预测。</p><details id="ipip-details"><summary>回答 Mini‑IPIP 20 题 <span id="ipip-progress">0 / 20</span></summary><p class="mirror-fineprint">请按现在的通常状态作答。中文为阅读辅助译文，未经本产品独立验证；原英文题项可展开查看。</p><div id="psych-questionnaire" class="psych-questionnaire"></div></details><div id="big-five-viz" class="big-five-viz" aria-live="polite"></div><label id="mbti-picker" class="mbti-picker" for="mbti-type">MBTI · 你描述自己的方式（可选）<select id="mbti-type"><option value="">暂不选择</option></select></label><p id="mbti-label" class="mirror-fineprint">MBTI 不从 Big Five 推导，也不承担预测权重。</p></div></article>
+        <article id="symbolic-mirror" class="mirror-card symbolic-mirror"><div class="mirror-card-head"><span class="mirror-number">03 · SYMBOLIC</span><label class="lens-switch"><input id="lens-symbolic" type="checkbox"> 展示</label></div><h3>传统命理里的你</h3><div id="symbolic-mirror-body"><p>八字与紫微在这里是传统符号语言，不是现实事实、科学验证或确定未来。</p><p id="symbolic-demo-note" class="mirror-fineprint" hidden>当前故事是虚构演示；此处自填的出生资料只展示你的符号镜头，不代表故事角色。</p><div class="birth-grid"><label>公历出生日期 <input id="birth-date" type="date" min="1992-01-01"></label><label>当地出生时间 <input id="birth-time" type="time"></label><label>出生城市 <input id="birth-place" type="text" maxlength="80" placeholder="仅用于确认时间地区"></label><label>传统排盘参数（选填）<select id="birth-traditional-sex"><option value="">不提供；仅排八字</option><option value="男">男</option><option value="女">女</option></select></label></div><label class="utc8-confirm"><input id="birth-utc8" type="checkbox"> 我确认出生时当地使用 UTC+8 标准时间</label><p class="mirror-fineprint">日期用于历法换算；时间用于时柱和十二宫；地点仅用于由你核对时区，不会上传。紫微库还需传统男/女排盘参数；这不代表你的性别身份。未知时辰不推造精确盘。暂不支持真太阳时、历史夏令时和 23:00–00:59 换日差异。</p><button id="cast-chart" class="quiet-button" type="button">在本机排出符号镜头 ↗</button><p id="chart-status" role="status">未提供出生资料；不会生成命盘。</p><div id="four-pillars" class="four-pillars" aria-label="八字四柱"></div><div id="five-elements" class="five-elements" aria-label="五行结构"></div><div id="ziwei-palaces" class="ziwei-palaces" aria-label="紫微十二宫"></div></div></article>
+      </div>
+      <div class="mirror-convergence"><p>现实描述、心理自评与传统符号，停在同一个决策节点。</p><strong>真正分岔的，仍是你想改的那个选择。</strong><button id="continue-fork" class="primary-button" type="button">带着这些镜头，走向岔路 ↗</button><small>假设情景，不是真实历史或未来预测</small></div>
+    </section>
+
     <section class="experience" id="experience" aria-label="平行人生叙事体验" hidden>
-      <div class="experience-top"><span>PARALLEL YOU</span><div id="timeline-shell" class="timeline-shell" aria-hidden="true"></div><span class="boundary">假设情景 · 非历史或预测</span></div>
+      <div class="experience-top"><span>PARALLEL YOU</span><div id="timeline-shell" class="timeline-shell" aria-hidden="true"></div><span class="boundary">假设情景 · 非历史或预测</span></div><div class="lens-ribbon"><label for="story-lens-mode">镜头 <select id="story-lens-mode"><option value="reality">现实</option><option value="psychology">心理</option><option value="symbolic">命理</option><option value="fusion">融合</option><option value="custom">自选</option></select></label><span id="lens-ribbon-note"></span></div>
       <div class="experience-body">
         <div id="fork-stage" class="stage fork-stage" hidden><p class="stage-kicker">THE FORK · 那一天</p><h2>那一天。</h2><p class="fork-pause">你选择了……</p><p id="fork-original" class="fork-original"></p><p class="fork-ask">这一次呢？</p><p id="fork-alternative" class="fork-alternative"></p><button id="choose-change" class="primary-button" type="button">改变这一次 ↗</button><p id="fork-direction" class="fork-direction" hidden>REALITY → COUNTERFACTUAL</p><p id="fork-context" class="subtle-copy"></p></div>
 
