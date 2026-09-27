@@ -7,8 +7,8 @@
   <meta name="description" content="改变一个选择，看看两条假设中的人生世界线。">
   <title>另一种人生 · Parallel You</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=chat-focus-1">
-  <script type="module" src="./app.js"></script>
+  <link rel="stylesheet" href="./styles.css?v=cinematic-v2">
+  <script type="module" src="./app.js?v=cinematic-v2"></script>
 </head>
 <body>
   <header class="site-header">
@@ -44,19 +44,50 @@
           <div class="field"><label for="background">当时的生活是什么样？</label><textarea id="background" name="background" rows="3" maxlength="400" placeholder="例如：毕业那年，我已经在熟悉的城市找到稳定工作……" required></textarea><p class="hint">一点背景，会让两条路更贴近你的问题。</p></div>
           <div class="field-row"><div class="field"><label for="decision">现实中，你做了什么选择？</label><textarea id="decision" name="decision" rows="2" maxlength="220" placeholder="我留在了原来的城市。" required></textarea></div><div class="field"><label for="alternative">这次，改变哪一个选择？</label><textarea id="alternative" name="alternative" rows="2" maxlength="220" placeholder="我接受了另一座城市的邀请。" required></textarea></div></div>
           <details class="more-context"><summary>补充当时知道的信息 <span>选填</span></summary><div class="field-row"><div class="field"><label for="known_then">当时能知道什么？</label><textarea id="known_then" name="known_then" rows="2" maxlength="300" placeholder="只写当时已经知道的线索。"></textarea></div><div class="field"><label for="learned_later">后来才知道什么？</label><textarea id="learned_later" name="learned_later" rows="2" maxlength="300" placeholder="此项不会用于生成世界线。"></textarea></div></div></details>
-          <div class="form-footer"><div class="field select-field"><label for="horizon_months">向前看多久</label><select id="horizon_months" name="horizon_months"><option value="12">1 年</option><option value="24" selected>2 年</option><option value="36">3 年</option><option value="60">5 年</option></select></div><button class="generate-button" type="submit">打开平行世界 <span aria-hidden="true">↗</span></button></div>
+          <div class="form-footer"><div class="field select-field"><label for="horizon_months">向前看多久</label><select id="horizon_months" name="horizon_months"><option value="12">1 年</option><option value="24" selected>2 年</option><option value="36">3 年</option><option value="60">5 年</option><option value="120">10 年</option></select></div><button class="generate-button" type="submit">走进另一条人生 <span aria-hidden="true">↗</span></button></div>
           <p id="form-error" class="form-error" role="alert" hidden></p>
         </form>
         <details id="dev-panel" class="dev-panel" hidden><summary>开发模式 · Backend mode</summary><label for="backend-mode">同一界面切换运行模式</label><select id="backend-mode"><option value="mock">mock</option><option value="baseline">baseline</option><option value="iu-enhanced">iu-enhanced</option></select><p>三个模式目前均使用本地确定性演示 adapter；真实模型接口未接入，缺少授权 CONFIG_LOCK 时不会发出模型请求。</p></details>
       </div>
     </section>
 
-    <section class="results wrap" id="results" aria-labelledby="results-title" hidden>
-      <div class="section-heading result-heading"><p class="eyebrow">02 / 两条世界线</p><h2 id="results-title">同一个起点，<br>不同的后来。</h2><p>以下是帮助思考的假设故事。真实生活会受到更多人、时机和偶然因素影响。</p></div>
-      <div class="worlds" id="worlds"></div>
-      <div class="uncertainty-card"><span class="uncertainty-icon" aria-hidden="true">◎</span><div><h3>留一点空间给未知</h3><p id="uncertainty-text"></p></div></div>
-      <section class="self-section" aria-labelledby="self-title"><div class="self-intro"><p class="eyebrow">03 / MEET YOUR ALTERNATE SELF</p><h2 id="self-title">和另一个自己，<br>说几句话。</h2><p>这是一位根据假设世界线写出的虚构角色。它不知道未来，也无法代表真实的你或他人。</p><div class="self-avatar" aria-hidden="true">✳</div></div><div class="chat-panel"><div class="chat-header"><span class="chat-avatar" aria-hidden="true">✳</span><div><strong>另一个你</strong><small>来自另一条可能的世界线</small></div><span class="chat-live">故事中</span></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="与另一个自己的对话"></div><form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">想和另一个自己说什么</label><input id="chat-input" maxlength="300" autocomplete="off" placeholder="问问另一个自己，什么值得珍惜……"><button type="submit" aria-label="发送消息">↗</button></form><p class="chat-disclaimer">本地演示对话 · 不会发送给真实模型</p></div></section>
-      <button id="restart-button" class="restart-button" type="button">再试一次选择 ↺</button>
+    <section class="experience" id="experience" aria-label="平行人生叙事体验" hidden>
+      <div class="experience-shell wrap">
+        <div class="experience-top"><span>PARALLEL YOU <i aria-hidden="true">✳</i> 一条选择，两种人生</span><button id="restart-button" type="button">重新选择 ↗</button></div>
+
+        <div id="transition-stage" class="transition-stage" hidden>
+          <div class="cosmos" aria-hidden="true"><div class="cosmos-ring ring-a"></div><div class="cosmos-ring ring-b"></div><div class="cosmos-core"></div><div class="cosmos-path path-a"></div><div class="cosmos-path path-b"></div></div>
+          <p class="stage-kicker">THE MOMENT SPLITS</p><h2>时间，正在分岔。</h2><p id="transition-caption">从那个选择开始，两条可能的路缓缓展开。</p><button id="skip-transition" type="button">跳过演出 →</button>
+        </div>
+
+        <div id="fork-stage" class="fork-stage" hidden>
+          <p class="stage-kicker">CHAPTER 00 · 岔路口</p><h2>同一个你。<br><em>两种后来。</em></h2><p class="fork-copy" id="fork-copy"></p>
+          <div class="fork-choices" id="fork-choices"></div>
+          <p class="stage-disclaimer">假设情景，不是真实历史或未来预测。每条路都包含未发生过的虚构细节。</p>
+        </div>
+
+        <div id="scene-stage" class="scene-stage" hidden>
+          <div class="scene-meta"><span id="scene-chapter"></span><span id="scene-count"></span></div>
+          <div class="scene-progress" id="scene-progress" aria-label="故事进度"></div>
+          <div class="world-switch" role="group" aria-label="切换世界线"><button id="switch-original" type="button"></button><button id="switch-alternate" type="button"></button></div>
+          <article class="scene-content" id="scene-content" aria-live="polite"></article>
+          <div class="scene-actions"><button id="scene-back" type="button">← 上一幕</button><button id="scene-next" class="scene-next" type="button">继续这一生 →</button></div>
+          <p class="scene-boundary" id="scene-boundary"></p>
+        </div>
+
+        <div id="meeting-stage" class="meeting-stage" hidden>
+          <p class="stage-kicker">THE MEETING · 相遇</p><h2>在另一条路的尽头，<br><em>你遇见了你。</em></h2>
+          <p id="meeting-setting" class="meeting-setting"></p><p id="meeting-scene" class="meeting-scene"></p>
+          <blockquote id="meeting-words"></blockquote><button id="enter-self" type="button">和他坐下来聊聊 ↗</button>
+        </div>
+
+        <div id="self-stage" class="self-stage" hidden>
+          <div class="self-reveal"><p class="stage-kicker">FINAL CHAPTER · ALTERNATE SELF</p><h2>他有自己的日常，<br><em>也有没解开的结。</em></h2><p>眼前的人只是这段假设故事里的角色。他不是未来的你，也不知道任何真实的人会怎样想。</p><div class="self-portrait" aria-hidden="true"><span>另一个你</span></div></div>
+          <div class="self-detail"><p class="self-nameplate">来自另一条可能的世界线</p><h3 id="self-city"></h3><div id="self-facts" class="self-facts"></div><blockquote id="self-view"></blockquote></div>
+          <div class="chat-wrap"><div class="chat-heading"><div><span class="chat-avatar" aria-hidden="true">✳</span><span><strong>和另一个自己说说话</strong><small>虚构对话 · 本地演示</small></span></div><span class="chat-live">故事中</span></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="与另一个自己的对话"></div><div class="chat-prompts" id="chat-prompts" aria-label="可以聊的话题"></div><form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">想和另一个自己说什么</label><input id="chat-input" type="text" maxlength="300" autocomplete="off" placeholder="例如：你真的快乐吗？"><button type="submit" aria-label="发送消息">↗</button></form><p class="chat-disclaimer">假设情景，不是真实历史或未来预测 · 不会调用真实模型</p></div>
+          <div class="story-end-actions"><button id="revisit-scenes" type="button">← 重看时间线</button><button id="share-preview" type="button">分享这一刻 ↗</button><p id="share-status" role="status"></p></div>
+        </div>
+      </div>
     </section>
   </main>
   <footer class="site-footer"><div class="wrap footer-inner"><span class="footer-brand">另一种人生<span class="brand-dot">.</span></span><p>假设情景，不是真实历史或未来预测。你的输入不会在此网站持久保存。</p><span>PARALLEL YOU · PREVIEW</span></div></footer>
