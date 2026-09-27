@@ -3,26 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f4ee">
+  <meta name="theme-color" content="#0c1921">
   <meta name="description" content="改变一个选择，看看两条假设中的人生世界线。">
   <title>另一种人生 · Parallel You</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=cinematic-v2">
-  <script type="module" src="./app.js?v=cinematic-v2"></script>
+  <link rel="stylesheet" href="./styles.css?v=cinematic-v2-flow">
+  <script type="module" src="./app.js?v=cinematic-v2-flow"></script>
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="另一种人生，返回顶部"><span class="brand-mark">∞</span><span>另一种人生<span class="brand-dot">.</span></span></a>
-    <a class="header-link" href="#create">开启一条世界线 <span aria-hidden="true">↗</span></a>
+    <a class="header-link open-input" href="#create">开启一条世界线 <span aria-hidden="true">↗</span></a>
   </header>
 
   <main id="top">
-    <section class="hero wrap" aria-labelledby="hero-title">
+    <section class="hero wrap" id="landing" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="eyebrow"><span class="eyebrow-line"></span> PARALLEL YOU · 人生平行宇宙</p>
         <h1 id="hero-title">如果那天，<br>你选择了<span class="highlight">另一条路</span>。</h1>
         <p class="hero-lede">从一个真实的岔路口出发，走进两种可能的人生。看见收获，也看见代价；然后，和另一个自己聊聊。</p>
-        <a class="primary-link" href="#create">开始探索 <span aria-hidden="true">↗</span></a>
+        <a class="primary-link open-input" href="#create">进入故事 <span aria-hidden="true">↗</span></a>
         <p class="hero-note"><span class="note-icon" aria-hidden="true">✳</span> 假设情景，不是真实历史或未来预测</p>
       </div>
       <div class="hero-art" aria-hidden="true">
@@ -44,7 +44,8 @@
           <div class="field"><label for="background">当时的生活是什么样？</label><textarea id="background" name="background" rows="3" maxlength="400" placeholder="例如：毕业那年，我已经在熟悉的城市找到稳定工作……" required></textarea><p class="hint">一点背景，会让两条路更贴近你的问题。</p></div>
           <div class="field-row"><div class="field"><label for="decision">现实中，你做了什么选择？</label><textarea id="decision" name="decision" rows="2" maxlength="220" placeholder="我留在了原来的城市。" required></textarea></div><div class="field"><label for="alternative">这次，改变哪一个选择？</label><textarea id="alternative" name="alternative" rows="2" maxlength="220" placeholder="我接受了另一座城市的邀请。" required></textarea></div></div>
           <details class="more-context"><summary>补充当时知道的信息 <span>选填</span></summary><div class="field-row"><div class="field"><label for="known_then">当时能知道什么？</label><textarea id="known_then" name="known_then" rows="2" maxlength="300" placeholder="只写当时已经知道的线索。"></textarea></div><div class="field"><label for="learned_later">后来才知道什么？</label><textarea id="learned_later" name="learned_later" rows="2" maxlength="300" placeholder="此项不会用于生成世界线。"></textarea></div></div></details>
-          <div class="form-footer"><div class="field select-field"><label for="horizon_months">向前看多久</label><select id="horizon_months" name="horizon_months"><option value="12">1 年</option><option value="24" selected>2 年</option><option value="36">3 年</option><option value="60">5 年</option><option value="120">10 年</option></select></div><button class="generate-button" type="submit">走进另一条人生 <span aria-hidden="true">↗</span></button></div>
+          <div class="pace-choice" role="group" aria-label="阅读节奏"><span>阅读节奏</span><button id="pace-immersive" type="button" aria-pressed="true">沉浸模式 <small>慢一点，进入场景</small></button><button id="pace-quick" type="button" aria-pressed="false">快速浏览 <small>跳过大部分演出</small></button></div>
+          <div class="form-footer"><div class="field select-field"><label for="horizon_months">向前看多久</label><select id="horizon_months" name="horizon_months"><option value="12">1 年</option><option value="24" selected>2 年</option><option value="36">3 年</option><option value="60">5 年</option><option value="120">10 年</option></select></div><button class="generate-button" type="submit">来到那个岔路口 <span aria-hidden="true">↗</span></button></div>
           <p id="form-error" class="form-error" role="alert" hidden></p>
         </form>
         <details id="dev-panel" class="dev-panel" hidden><summary>开发模式 · Backend mode</summary><label for="backend-mode">同一界面切换运行模式</label><select id="backend-mode"><option value="mock">mock</option><option value="baseline">baseline</option><option value="iu-enhanced">iu-enhanced</option></select><p>三个模式目前均使用本地确定性演示 adapter；真实模型接口未接入，缺少授权 CONFIG_LOCK 时不会发出模型请求。</p></details>
@@ -53,39 +54,60 @@
 
     <section class="experience" id="experience" aria-label="平行人生叙事体验" hidden>
       <div class="experience-shell wrap">
-        <div class="experience-top"><span>PARALLEL YOU <i aria-hidden="true">✳</i> 一条选择，两种人生</span><button id="restart-button" type="button">重新选择 ↗</button></div>
-
-        <div id="transition-stage" class="transition-stage" hidden>
-          <div class="cosmos" aria-hidden="true"><div class="cosmos-ring ring-a"></div><div class="cosmos-ring ring-b"></div><div class="cosmos-core"></div><div class="cosmos-path path-a"></div><div class="cosmos-path path-b"></div></div>
-          <p class="stage-kicker">THE MOMENT SPLITS</p><h2>时间，正在分岔。</h2><p id="transition-caption">从那个选择开始，两条可能的路缓缓展开。</p><button id="skip-transition" type="button">跳过演出 →</button>
-        </div>
+        <div class="experience-top"><span>PARALLEL YOU <i aria-hidden="true">✳</i> 假设情景 · 非历史或预测</span><button id="restart-button" type="button">重新选择 ↗</button></div>
 
         <div id="fork-stage" class="fork-stage" hidden>
           <p class="stage-kicker">CHAPTER 00 · 岔路口</p><h2>同一个你。<br><em>两种后来。</em></h2><p class="fork-copy" id="fork-copy"></p>
           <div class="fork-choices" id="fork-choices"></div>
-          <p class="stage-disclaimer">假设情景，不是真实历史或未来预测。每条路都包含未发生过的虚构细节。</p>
+          <p class="stage-disclaimer">先走完一条人生，才会解锁另一条。场景中的细节均为虚构。</p>
+        </div>
+
+        <div id="transition-stage" class="transition-stage" hidden>
+          <div class="cosmos" aria-hidden="true"><div class="cosmos-ring ring-a"></div><div class="cosmos-ring ring-b"></div><div class="cosmos-core"></div><div class="cosmos-path path-a"></div><div class="cosmos-path path-b"></div></div>
+          <p class="stage-kicker">SIMULATION FORMATION · 世界正在形成</p><h2>一条路，<br>从此有了回声。</h2><p id="transition-caption">你的选择先改变一个动作，再慢慢改变日常。</p><button id="skip-transition" type="button">继续 →</button>
+        </div>
+
+        <div id="divergence-stage" class="divergence-stage" hidden>
+          <p class="stage-kicker">FIRST DIVERGENCE · 第一处偏移</p><h2 id="divergence-title"></h2><p id="divergence-copy"></p><p id="divergence-cause"></p><button id="enter-chapters" type="button">走进第一幕 ↗</button>
         </div>
 
         <div id="scene-stage" class="scene-stage" hidden>
           <div class="scene-meta"><span id="scene-chapter"></span><span id="scene-count"></span></div>
           <div class="scene-progress" id="scene-progress" aria-label="故事进度"></div>
-          <div class="world-switch" role="group" aria-label="切换世界线"><button id="switch-original" type="button"></button><button id="switch-alternate" type="button"></button></div>
+          <div id="causal-transition" class="causal-transition" aria-live="polite" hidden></div>
           <article class="scene-content" id="scene-content" aria-live="polite"></article>
           <div class="scene-actions"><button id="scene-back" type="button">← 上一幕</button><button id="scene-next" class="scene-next" type="button">继续这一生 →</button></div>
           <p class="scene-boundary" id="scene-boundary"></p>
         </div>
 
+        <div id="present-stage" class="present-stage" hidden>
+          <p class="stage-kicker">PRESENT DAY · 此刻</p><h2>故事走到了今天。<br><em>人生还没有结局。</em></h2><p id="present-prose"></p><p id="present-uncertainty"></p><button id="leave-present" type="button">继续走，去见那个人 ↗</button>
+        </div>
+
         <div id="meeting-stage" class="meeting-stage" hidden>
+          <div class="meeting-convergence" aria-hidden="true"><span></span><i>✳</i><span></span></div>
           <p class="stage-kicker">THE MEETING · 相遇</p><h2>在另一条路的尽头，<br><em>你遇见了你。</em></h2>
           <p id="meeting-setting" class="meeting-setting"></p><p id="meeting-scene" class="meeting-scene"></p>
           <blockquote id="meeting-words"></blockquote><button id="enter-self" type="button">和他坐下来聊聊 ↗</button>
         </div>
 
-        <div id="self-stage" class="self-stage" hidden>
-          <div class="self-reveal"><p class="stage-kicker">FINAL CHAPTER · ALTERNATE SELF</p><h2>他有自己的日常，<br><em>也有没解开的结。</em></h2><p>眼前的人只是这段假设故事里的角色。他不是未来的你，也不知道任何真实的人会怎样想。</p><div class="self-portrait" aria-hidden="true"><span>另一个你</span></div></div>
-          <div class="self-detail"><p class="self-nameplate">来自另一条可能的世界线</p><h3 id="self-city"></h3><div id="self-facts" class="self-facts"></div><blockquote id="self-view"></blockquote></div>
-          <div class="chat-wrap"><div class="chat-heading"><div><span class="chat-avatar" aria-hidden="true">✳</span><span><strong>和另一个自己说说话</strong><small>虚构对话 · 本地演示</small></span></div><span class="chat-live">故事中</span></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="与另一个自己的对话"></div><div class="chat-prompts" id="chat-prompts" aria-label="可以聊的话题"></div><form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">想和另一个自己说什么</label><input id="chat-input" type="text" maxlength="300" autocomplete="off" placeholder="例如：你真的快乐吗？"><button type="submit" aria-label="发送消息">↗</button></form><p class="chat-disclaimer">假设情景，不是真实历史或未来预测 · 不会调用真实模型</p></div>
-          <div class="story-end-actions"><button id="revisit-scenes" type="button">← 重看时间线</button><button id="share-preview" type="button">分享这一刻 ↗</button><p id="share-status" role="status"></p></div>
+        <div id="conversation-stage" class="conversation-stage" hidden>
+          <p class="stage-kicker">A CONVERSATION · 和另一个自己说几句话</p>
+          <div class="conversation-scene"><div class="self-portrait" aria-hidden="true"><span>另一个你</span></div><div><p id="self-context"></p><p id="self-understory"></p></div></div>
+          <div class="chat-wrap"><div class="chat-heading"><div><span class="chat-avatar" aria-hidden="true">✳</span><span><strong>另一个你</strong><small id="self-city"></small></span></div><span class="chat-live">故事中</span></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="与另一个自己的对话"></div><div class="chat-prompts" id="chat-prompts" aria-label="可以聊的话题"></div><form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">想和另一个自己说什么</label><input id="chat-input" type="text" maxlength="300" autocomplete="off" placeholder="想问他的，或想告诉他的……"><button type="submit" aria-label="发送消息">↗</button></form><p class="chat-disclaimer">虚构角色 · 本地演示 · 不会调用真实模型</p></div>
+          <button id="end-conversation" class="quiet-next" type="button">把这场相遇留在这里，继续 ↗</button>
+        </div>
+
+        <div id="epilogue-stage" class="epilogue-stage" hidden>
+          <p class="stage-kicker">TIMELINE EPILOGUE · 尾声</p><h2>一条路走过，<br><em>另一条仍在那里。</em></h2><p id="epilogue-line"></p><div id="epilogue-timeline" class="epilogue-timeline"></div>
+          <div class="epilogue-actions"><button id="view-other" type="button">再走另一条世界线 ↗</button><button id="go-share" type="button">留下这一刻 → 分享</button></div><p class="stage-disclaimer">两条路都没有被判定为更好。你可以只带走此刻有用的一点感受。</p>
+        </div>
+
+        <div id="share-stage" class="share-stage" hidden>
+          <p class="stage-kicker">SHARE · 带走一个瞬间</p><h2>有些话，<br><em>值得留给另一个人看。</em></h2>
+          <div id="share-card" class="share-card" aria-label="公开分享卡"><span>PARALLEL YOU / 另一种人生</span><p id="share-quote"></p><small>假设情景，不是真实历史或未来预测</small><strong id="share-url"></strong></div>
+          <label class="full-story-choice"><input id="share-full-story" type="checkbox"> <span>我明确选择包含完整故事；它可能包含我输入的私人内容。</span></label>
+          <div class="share-actions"><button id="share-preview" type="button">分享卡片 ↗</button><button id="save-card" type="button">保存卡片 PNG ↓</button><button id="back-epilogue" type="button">← 返回尾声</button></div><p id="share-status" role="status"></p>
         </div>
       </div>
     </section>

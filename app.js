@@ -1,169 +1,56 @@
 import {MODES,simulate,reply} from './engine.js?v=cinematic-v2';
+import {createJourney,advance} from './journey.js';
+import {cardContent,shareText} from './share.js';
 
 const $=id=>document.getElementById(id);
-const form=$('story-form'), demoGrid=$('demo-grid'), experience=$('experience');
-const stages=['transition-stage','fork-stage','scene-stage','meeting-stage','self-stage'];
-let demos=[],activeDemo=null,story=null,worldIndex=0,sceneIndex=0,transitionTimer=null,captionTimer=null,chatHistory=[];
+const form=$('story-form'),demoGrid=$('demo-grid'),experience=$('experience');
+const stages={fork:'fork-stage',formation:'transition-stage',divergence:'divergence-stage',chapter:'scene-stage',present:'present-stage',meeting:'meeting-stage',conversation:'conversation-stage',epilogue:'epilogue-stage',share:'share-stage'};
+const reduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let demos=[],activeDemo=null,story=null,journey=createJourney(),chatHistory=[],timer=null,revealTimer=null,serial=0,syntheticDemo=false;
+const url=()=>`${location.origin}${location.pathname}`;
+function el(tag,className,text){const e=document.createElement(tag);if(className)e.className=className;if(text!==undefined)e.textContent=text;return e;}
+function clearTimers(){clearTimeout(timer);clearTimeout(revealTimer);timer=revealTimer=null;serial++;}
+function scrollTop(){window.scrollTo({top:0,behavior:'auto'});}
+function dispatch(event,payload){clearTimers();journey=advance(journey,event,payload);render();}
+function showError(message){$('form-error').textContent=message;$('form-error').hidden=!message;}
+function renderDemos(){demoGrid.replaceChildren();for(const demo of demos){const card=el('button','demo-card');card.type='button';card.dataset.demoId=demo.id;card.setAttribute('aria-pressed','false');const top=el('span','demo-top');top.append(el('span','',demo.eyebrow),el('span','demo-arrow','↗'));card.append(top,el('strong','',demo.title),el('small','','点击走进这个故事'));card.addEventListener('click',()=>fillDemo(demo));demoGrid.append(card);}}
+function fillDemo(demo){for(const name of ['background','decision','alternative','known_then','learned_later','horizon_months'])form.elements.namedItem(name).value=demo[name]??'';activeDemo=demo.id;for(const card of demoGrid.querySelectorAll('button'))card.setAttribute('aria-pressed',String(card.dataset.demoId===activeDemo));showError('');form.scrollIntoView({behavior:'smooth',block:'center'});}
+function enterInput(event){event.preventDefault();if(journey.phase==='landing')dispatch('OPEN_INPUT');}
+function setPace(quick){dispatch('SET_PACE',quick?'quick':'immersive');}
+function renderFork(){$('fork-copy').textContent=story.fork.moment;const choices=$('fork-choices');choices.replaceChildren();story.worldlines.forEach((world,index)=>{const button=el('button',`fork-choice ${index?'fork-alternate':'fork-original'}`);button.type='button';const choice=index?story.fork.counterfactual_choice:story.fork.original_choice;button.append(el('span','fork-number',`0${index+1} / ${world.name}`),el('strong','',choice),el('span','fork-enter','走进这条路 ↗'));button.addEventListener('click',()=>dispatch('SELECT_WORLD',index));choices.append(button);});}
+function renderFormation(){const turn=serial;$('transition-caption').textContent=journey.quick?'正在形成这条人生。':'一个决定先改变动作，然后慢慢改变日常。';timer=setTimeout(()=>{if(turn===serial)dispatch('FORMED');},journey.quick||reduced()?100:1650);}
+function renderDivergence(){const scene=story.worldlines[journey.world].scenes[0];$('divergence-title').textContent=scene.scene_title;$('divergence-copy').textContent=scene.scene_text;$('divergence-cause').textContent=`第一道回声 · ${scene.causal_link}`;}
+function motifClass(value){const s=String(value);if(/信|纸|书|笔|作品|申请/.test(s))return 'motif-paper';if(/城市|街|路|车票|站/.test(s))return 'motif-city';if(/手机|消息|谈话|关系/.test(s))return 'motif-message';return 'motif-room';}
+function ambientClass(value){const s=String(value);if(/雨|水/.test(s))return 'ambient-rain';if(/车|街|路|站/.test(s))return 'ambient-transit';if(/风|树|叶/.test(s))return 'ambient-wind';return 'ambient-room';}
+function renderChapter(){const world=story.worldlines[journey.world],scene=world.scenes[journey.chapter],index=journey.chapter;const article=$('scene-content');$('scene-chapter').textContent=`CHAPTER ${String(index+1).padStart(2,'0')} · ${world.name}`;$('scene-count').textContent=`${index+1} / ${world.scenes.length}`;const progress=$('scene-progress');progress.replaceChildren();for(let i=0;i<world.scenes.length;i++)progress.append(el('span',i<=index?'is-past':''));article.className=`scene-content scene-enter ${journey.world?'scene-alternate':'scene-original'} ${motifClass(scene.visual_motif)} ${ambientClass(scene.ambient)} tension-${Math.max(1,Math.min(5,Number(scene.tension)||2))}`;article.replaceChildren();const art=el('div','scene-atmosphere');art.setAttribute('aria-hidden','true');art.append(el('span','atmosphere-line'),el('span','atmosphere-light'),el('span','atmosphere-object'));const main=el('div','scene-main');main.append(el('p','scene-time',scene.time_label),el('p','scene-place',`◎ ${scene.location}`),el('h2','',scene.scene_title),el('p','scene-prose',scene.scene_text));const details=el('div','scene-details');const gain=el('div','scene-detail');gain.append(el('span','','你得到了'),el('p','',scene.gain));const cost=el('div','scene-detail');cost.append(el('span','','你失去了'),el('p','',scene.cost));details.append(gain,cost);const foot=el('div','scene-foot');foot.append(el('p','scene-feeling',scene.emotion),el('p','',`听见 · ${scene.ambient}`),el('p','scene-uncertain',`${scene.uncertainty} 不确定性 · ${story.epistemic_note}`));article.append(art,main,details,foot);$('scene-back').textContent=index?'← 上一幕':'← 第一处分岔';$('scene-next').textContent=index===5?'走向此刻 ↗':'下一幕 →';$('scene-boundary').textContent=story.epistemic_note;$('causal-transition').hidden=true;const turn=serial;if(journey.quick||reduced())details.classList.add('is-revealed');else revealTimer=setTimeout(()=>{if(turn===serial)details.classList.add('is-revealed');},1050);}
+function nextChapter(){if($('scene-content').hidden)return;const current=story.worldlines[journey.world].scenes[journey.chapter];if(journey.quick||reduced()||journey.chapter===5){dispatch('NEXT_CHAPTER');return;}const turn=serial;$('scene-content').hidden=true;const bridge=$('causal-transition');bridge.textContent=current.causal_link;bridge.hidden=false;$('scene-next').disabled=true;timer=setTimeout(()=>{if(turn===serial)dispatch('NEXT_CHAPTER');},850);}
+function renderPresent(){const scene=story.worldlines[journey.world].scenes[5];$('present-prose').textContent=scene.scene_text;$('present-uncertainty').textContent=`${scene.emotion}。${story.epistemic_note}`;}
+function renderMeeting(){$('meeting-setting').textContent=`◎ ${story.meeting.setting}`;$('meeting-scene').textContent=story.meeting.scene;$('meeting-words').textContent=story.meeting.first_words;const words=$('meeting-words');words.classList.toggle('is-revealed',journey.quick||reduced());if(!journey.quick&&!reduced()){const turn=serial;revealTimer=setTimeout(()=>{if(turn===serial)words.classList.add('is-revealed');},1500);}}
+function appendMessage(who,text){const bubble=el('div',`message ${who}`,text);$('chat-messages').append(bubble);$('chat-messages').scrollTop=$('chat-messages').scrollHeight;}
+function renderConversation(){const self=story.alternate_self;$('self-city').textContent=self.current_scene;$('self-context').textContent=`${self.daily_life} ${self.work_or_study}`;$('self-understory').textContent=`${self.relationships} ${self.personality_change} ${self.unresolved_problem}`;$('chat-messages').replaceChildren();appendMessage('self',story.meeting.first_words);for(const turn of chatHistory)appendMessage(turn.speaker,turn.text);const prompts=$('chat-prompts');prompts.replaceChildren();for(const prompt of story.conversation_starters){const button=el('button','',prompt);button.type='button';button.addEventListener('click',()=>sendChat(prompt));prompts.append(button);}}
+function sendChat(text){if(!story||!text.trim())return;try{const answer=reply(text,story.alternate_self,chatHistory);chatHistory.push({speaker:'you',text},{speaker:'self',text:answer});journey=advance(journey,'CHAT_TURN');appendMessage('you',text);appendMessage('self',answer);$('chat-input').value='';}catch(error){$('chat-input').setCustomValidity(error.message);$('chat-input').reportValidity();$('chat-input').setCustomValidity('');}}
+function renderEpilogue(){const world=story.worldlines[journey.world];$('epilogue-line').textContent=`${world.name} · ${story.alternate_self.thought_about_real_world}`;const timeline=$('epilogue-timeline');timeline.replaceChildren();for(const scene of world.scenes){const chapter=el('div','epilogue-chapter');chapter.append(el('time','',scene.time_label),el('span','',scene.scene_title));timeline.append(chapter);}$('view-other').hidden=journey.completed[journey.world===0?1:0];}
+function renderShare(){const card=cardContent(story,{syntheticDemo});$('share-quote').textContent=`“${card.quote}”`;$('share-full-story').checked=false;$('share-status').textContent='';$('share-url').textContent=url().replace(/^https?:\/\//,'');}
+function render(){const phase=journey.phase;document.body.classList.toggle('is-landing',phase==='landing');document.body.classList.toggle('is-experiencing',Boolean(stages[phase]));document.body.classList.toggle('is-input',phase==='input');document.body.classList.toggle('quick-mode',journey.quick);experience.hidden=!stages[phase];for(const id of Object.values(stages))$(id).hidden=id!==stages[phase];$('pace-immersive').setAttribute('aria-pressed',String(!journey.quick));$('pace-quick').setAttribute('aria-pressed',String(journey.quick));if(stages[phase]){scrollTop();if(phase==='fork')renderFork();if(phase==='formation')renderFormation();if(phase==='divergence')renderDivergence();if(phase==='chapter'){ $('scene-next').disabled=false;renderChapter();}if(phase==='present')renderPresent();if(phase==='meeting')renderMeeting();if(phase==='conversation')renderConversation();if(phase==='epilogue')renderEpilogue();if(phase==='share')renderShare();}else if(phase==='input'){$('background').focus({preventScroll:true});scrollTop();}else scrollTop();}
 
-function el(tag,className,text) {
-  const item=document.createElement(tag);
-  if (className) item.className=className;
-  if (text!==undefined) item.textContent=text;
-  return item;
-}
-function showError(text) { $('form-error').textContent=text; $('form-error').hidden=!text; }
-function showStage(id) {
-  for (const name of stages) $(name).hidden=name!==id;
-  window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-}
-function clearTransition() { clearTimeout(transitionTimer); clearTimeout(captionTimer); transitionTimer=null; captionTimer=null; }
-
-function renderDemos() {
-  demoGrid.replaceChildren();
-  for (const demo of demos) {
-    const card=el('button','demo-card'); card.type='button'; card.dataset.demoId=demo.id; card.setAttribute('aria-pressed','false');
-    const top=el('span','demo-top'); top.append(el('span','',demo.eyebrow),el('span','demo-arrow','↗'));
-    card.append(top,el('strong','',demo.title),el('small','','点击走进这个故事'));
-    card.addEventListener('click',()=>fillDemo(demo)); demoGrid.append(card);
-  }
-}
-function fillDemo(demo) {
-  for (const name of ['background','decision','alternative','known_then','learned_later','horizon_months']) form.elements.namedItem(name).value=demo[name]??'';
-  activeDemo=demo.id;
-  for (const card of demoGrid.querySelectorAll('button')) card.setAttribute('aria-pressed',String(card.dataset.demoId===activeDemo));
-  showError(''); form.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function startTransition() {
-  document.body.classList.add('is-experiencing'); experience.hidden=false;
-  $('transition-caption').textContent='从那个选择开始，两条可能的路缓缓展开。';
-  showStage('transition-stage');
-  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) { transitionTimer=setTimeout(finishTransition,180); return; }
-  captionTimer=setTimeout(()=>$('transition-caption').textContent='同一个起点，将有两种不同的日常。',900);
-  transitionTimer=setTimeout(finishTransition,2300);
-}
-function finishTransition() { clearTransition(); renderFork(); showStage('fork-stage'); }
-
-function renderFork() {
-  $('fork-copy').textContent=story.fork.moment;
-  const choices=$('fork-choices'); choices.replaceChildren();
-  story.worldlines.forEach((world,index)=>{
-    const button=el('button',`fork-choice ${index?'fork-alternate':'fork-original'}`);
-    button.type='button';
-    const choice=index?story.fork.counterfactual_choice:story.fork.original_choice;
-    button.append(el('span','fork-number',`0${index+1} / ${world.name}`),el('strong','',choice),el('span','fork-enter','走进这条路 ↗'));
-    button.addEventListener('click',()=>{worldIndex=index;sceneIndex=0;renderScene();showStage('scene-stage');});
-    choices.append(button);
-  });
-}
-
-function renderScene() {
-  const world=story.worldlines[worldIndex],scene=world.scenes[sceneIndex];
-  $('scene-chapter').textContent=`CHAPTER ${String(sceneIndex+1).padStart(2,'0')} · ${world.name}`;
-  $('scene-count').textContent=`${sceneIndex+1} / ${world.scenes.length}`;
-  const progress=$('scene-progress'); progress.replaceChildren();
-  for (let i=0;i<world.scenes.length;i++) progress.append(el('span',i<=sceneIndex?'is-past':''));
-  for (let i=0;i<2;i++) {
-    const button=$(i?'switch-alternate':'switch-original');
-    button.textContent=story.worldlines[i].name; button.setAttribute('aria-pressed',String(worldIndex===i));
-  }
-  const article=$('scene-content'); article.className=`scene-content ${worldIndex?'scene-alternate':'scene-original'}`;
-  article.replaceChildren();
-  const main=el('div','scene-main');
-  main.append(el('p','scene-time',scene.time_label),el('p','scene-place',`◎ ${scene.location}`),el('h2','',scene.scene_title),el('p','scene-prose',scene.scene_text),el('p','scene-shift',scene.causal_link));
-  const details=el('div','scene-details');
-  const gain=el('div','scene-detail'); gain.append(el('span','','你得到了'),el('p','',scene.gain));
-  const loss=el('div','scene-detail'); loss.append(el('span','','你失去了'),el('p','',scene.cost));
-  details.append(gain,loss);
-  const foot=el('div','scene-foot'); foot.append(el('p','scene-feeling',`此刻的心情 · ${scene.emotion}`),el('p','',`环境声 · ${scene.ambient}`),el('p','scene-uncertain',`不确定性 · ${scene.uncertainty}`));
-  article.append(main,details,foot);
-  $('scene-back').textContent=sceneIndex?'← 上一幕':'← 返回岔路';
-  $('scene-next').textContent=sceneIndex===world.scenes.length-1?'走向相遇 ↗':'继续这一生 →';
-  $('scene-boundary').textContent=story.epistemic_note;
-  // Replaying a short entrance animation makes each chapter and world switch feel distinct.
-  void article.offsetWidth; article.classList.add('scene-enter');
-}
-
-function renderMeeting() {
-  $('meeting-setting').textContent=`◎ ${story.meeting.setting}`;
-  $('meeting-scene').textContent=story.meeting.scene;
-  $('meeting-words').textContent=story.meeting.first_words;
-  showStage('meeting-stage');
-}
-
-function appendMessage(who,text) {
-  const bubble=el('div',`message ${who}`,text);
-  $('chat-messages').append(bubble); $('chat-messages').scrollTop=$('chat-messages').scrollHeight;
-}
-function renderSelf() {
-  const self=story.alternate_self;
-  $('self-city').textContent=self.current_scene;
-  const facts=$('self-facts'); facts.replaceChildren();
-  const labels=[['日常节奏',self.daily_life],['工作或学习',self.work_or_study],['身边的人',self.relationships],['多年的习惯',self.habit],['性格的变化',self.personality_change],['最大的遗憾',self.biggest_regret],['最大的收获',self.biggest_gain],['眼前的问题',self.unresolved_problem]];
-  for (const [label,value] of labels) {const row=el('div','self-fact');row.append(el('span','',label),el('p','',value));facts.append(row);}
-  $('self-view').textContent=`“${self.thought_about_real_world}”`;
-  chatHistory=[]; $('chat-messages').replaceChildren(); appendMessage('self',story.meeting.first_words);
-  const prompts=$('chat-prompts'); prompts.replaceChildren();
-  for (const prompt of story.conversation_starters) {
-    const button=el('button','',prompt); button.type='button';
-    button.addEventListener('click',()=>sendChat(prompt)); prompts.append(button);
-  }
-  showStage('self-stage');
-}
-function sendChat(text) {
-  if (!story || !text.trim()) return;
-  try {
-    const answer=reply(text,story.alternate_self,chatHistory);
-    chatHistory.push({speaker:'you',text},{speaker:'self',text:answer});
-    appendMessage('you',text); appendMessage('self',answer);
-    $('chat-input').value='';
-  } catch (error) { $('chat-input').setCustomValidity(error.message); $('chat-input').reportValidity(); $('chat-input').setCustomValidity(''); }
-}
-
-form.addEventListener('input',()=>{
-  activeDemo=null;
-  for (const card of demoGrid.querySelectorAll('button')) card.setAttribute('aria-pressed','false');
-  showError('');
-});
-form.addEventListener('submit',event=>{
-  event.preventDefault();
-  const values=Object.fromEntries(new FormData(form).entries());
-  values.theme=demos.find(demo=>demo.id===activeDemo)?.theme??'';
-  values.demo_id=activeDemo??'';
-  const mode=$('dev-panel').hidden?'mock':$('backend-mode').value;
-  try {story=simulate(values,mode);showError('');startTransition();}
-  catch (error) {showError(error instanceof Error?error.message:'暂时无法生成故事。');$('form-error').scrollIntoView({behavior:'smooth',block:'center'});}
-});
-$('skip-transition').addEventListener('click',finishTransition);
-$('switch-original').addEventListener('click',()=>{worldIndex=0;renderScene();});
-$('switch-alternate').addEventListener('click',()=>{worldIndex=1;renderScene();});
-$('scene-back').addEventListener('click',()=>{if (sceneIndex===0){renderFork();showStage('fork-stage');}else{sceneIndex--;renderScene();}});
-$('scene-next').addEventListener('click',()=>{if (sceneIndex<story.worldlines[worldIndex].scenes.length-1){sceneIndex++;renderScene();}else renderMeeting();});
-$('enter-self').addEventListener('click',renderSelf);
-$('revisit-scenes').addEventListener('click',()=>{renderScene();showStage('scene-stage');});
-$('restart-button').addEventListener('click',()=>{
-  clearTransition(); story=null; experience.hidden=true; document.body.classList.remove('is-experiencing');
-  window.scrollTo({top:0,behavior:'auto'}); $('background').focus({preventScroll:true});
-});
+for(const link of document.querySelectorAll('.open-input'))link.addEventListener('click',enterInput);
+$('pace-immersive').addEventListener('click',()=>setPace(false));$('pace-quick').addEventListener('click',()=>setPace(true));
+form.addEventListener('input',()=>{activeDemo=null;for(const card of demoGrid.querySelectorAll('button'))card.setAttribute('aria-pressed','false');showError('');});
+form.addEventListener('submit',event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form).entries());values.theme=demos.find(demo=>demo.id===activeDemo)?.theme??'';values.demo_id=activeDemo??'';const mode=$('dev-panel').hidden?'mock':$('backend-mode').value;try{story=simulate(values,mode);syntheticDemo=Boolean(activeDemo);chatHistory=[];showError('');dispatch('READY');}catch(error){showError(error instanceof Error?error.message:'暂时无法生成故事。');$('form-error').scrollIntoView({behavior:'smooth',block:'center'});}});
+$('skip-transition').addEventListener('click',()=>dispatch('FORMED'));
+$('enter-chapters').addEventListener('click',()=>dispatch('ENTER_CHAPTERS'));
+$('scene-back').addEventListener('click',()=>dispatch('PREVIOUS_CHAPTER'));
+$('scene-next').addEventListener('click',nextChapter);
+$('leave-present').addEventListener('click',()=>dispatch('PRESENT_DONE'));
+$('enter-self').addEventListener('click',()=>dispatch('MEETING_DONE'));
 $('chat-form').addEventListener('submit',event=>{event.preventDefault();sendChat($('chat-input').value.trim());});
-$('share-preview').addEventListener('click',async()=>{
-  const url=`${location.origin}${location.pathname}`;
-  const quote=story.meeting.first_words.replace(/^“|”$/g,'');
-  const text=`在另一条人生里，他说：“${quote}”\n假设情景，不是真实历史或未来预测。`;
-  try {
-    if (navigator.share) await navigator.share({title:'另一种人生',text,url});
-    else if (navigator.clipboard?.writeText) {await navigator.clipboard.writeText(`${text}\n${url}`);$('share-status').textContent='虚构台词和入口已复制；你的输入和对话没有包含在分享中。';}
-    else $('share-status').textContent=`分享入口：${url}`;
-  } catch (error) {if (error?.name!=='AbortError') $('share-status').textContent=`可手动复制入口：${url}`;}
-});
-
-const params=new URLSearchParams(location.search);
-if (params.get('dev')==='1') {
-  $('dev-panel').hidden=false;
-  if (MODES.includes(params.get('mode'))) $('backend-mode').value=params.get('mode');
-}
-fetch('./demo-data.json',{cache:'no-store'})
-  .then(response=>{if (!response.ok) throw new Error('演示案例暂时不可用');return response.json();})
-  .then(data=>{if (!data.synthetic_only || !Array.isArray(data.demos) || data.demos.length<3) throw new Error('演示案例校验失败');demos=data.demos;renderDemos();})
-  .catch(error=>demoGrid.append(el('p','demo-error',`${error.message}。仍可填写自己的故事。`)));
+$('end-conversation').addEventListener('click',()=>dispatch('CONVERSATION_DONE'));
+$('view-other').addEventListener('click',()=>{chatHistory=[];dispatch('VIEW_OTHER');});
+$('go-share').addEventListener('click',()=>dispatch('SHARE'));
+$('back-epilogue').addEventListener('click',()=>dispatch('BACK_TO_EPILOGUE'));
+$('restart-button').addEventListener('click',()=>{story=null;chatHistory=[];activeDemo=null;dispatch('RESTART');});
+$('share-preview').addEventListener('click',async()=>{const includeFullStory=$('share-full-story').checked;const payload=shareText(story,url(),{includeFullStory,syntheticDemo,chat:chatHistory});try{if(navigator.share)await navigator.share({title:'另一种人生',text:payload});else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(payload);$('share-status').textContent=includeFullStory?'完整故事已复制，请确认接收者。':'公开卡文案与链接已复制。';}else $('share-status').textContent=`复制此链接：${url()}`;}catch(error){if(error?.name!=='AbortError')$('share-status').textContent=`复制此链接：${url()}`;}});
+$('save-card').addEventListener('click',()=>{const safe=cardContent(story,{syntheticDemo});const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1080;const context=canvas.getContext('2d');if(!context){$('share-status').textContent='此浏览器暂不支持保存图片。';return;}context.fillStyle='#10242d';context.fillRect(0,0,1080,1080);context.fillStyle='#e4ae89';context.font='30px Georgia, serif';context.fillText('PARALLEL YOU',90,135);context.fillStyle='#f6efe5';context.font='bold 49px sans-serif';const quote=`“${safe.quote}”`;const chars=20;for(let i=0;i<quote.length;i+=chars)context.fillText(quote.slice(i,i+chars),90,310+Math.floor(i/chars)*76);context.font='25px sans-serif';context.fillStyle='#aabfbb';context.fillText(safe.note,90,850);context.fillText(url(),90,920);const a=document.createElement('a');a.download='parallel-you-card.png';a.href=canvas.toDataURL('image/png');a.click();$('share-status').textContent='卡片已保存；图片不包含私人输入或对话。';});
+const params=new URLSearchParams(location.search);if(params.get('dev')==='1'){$('dev-panel').hidden=false;if(MODES.includes(params.get('mode')))$('backend-mode').value=params.get('mode');}
+fetch('./demo-data.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('演示案例暂时不可用');return response.json();}).then(data=>{if(!data.synthetic_only||!Array.isArray(data.demos)||data.demos.length<3)throw new Error('演示案例校验失败');demos=data.demos;renderDemos();}).catch(error=>demoGrid.append(el('p','demo-error',`${error.message}。仍可填写自己的故事。`)));
+render();
