@@ -205,6 +205,16 @@ export function reply(message,self,history=[]) {
   if (crisis.test(text)) return '听起来你现在很难受。先别独自扛着；请联系身边可信任的人，或当地紧急求助服务。这个虚构角色不能提供危机支持。';
   if (/他.*想|她.*想|对方.*想|会不会喜欢|会不会答应|一定会|预测/.test(text)) return '这个我真的不知道。我不能替现实中的任何人说话。那天我能做的，只有把自己的部分说清楚，再给对方自由。';
   const turn=history.length;
+  const inNewCity=self.current_scene.startsWith('成都');
+  if (/成了家|算家吗|是家吗|把.*当家|安家|归属|这里.*家/.test(text)) return inNewCity
+    ? '算是家了吧。我能带刚来的同事绕开积水，也知道哪家早餐店便宜。可手机里那张返乡车次截图，我还留着。我不想为了证明这里是家，就假装不想原来的家。'
+    : '我正在把这里过成日子，但“家”不是一个选择之后立刻得到的答案。有些关系要重新照料，有些旧地方也仍会想念。';
+  if (/想家|想念家|回家看看/.test(text)) return inNewCity
+    ? '会啊。有些周末我会看回去的车次，迟迟不订。下班能熟门熟路地走过成都的街，不代表我不想家。'
+    : '会。换了一条路，旧生活也没有从我身上消失。我会想念那些不用特意安排就能见到人的普通日子。';
+  if (/最想念什么|想念什么|怀念什么/.test(text)) return self.current_scene.startsWith('杭州')
+    ? '老朋友那些不用提前很久约、就能见面的周末吧。我喜欢现在做的事，也确实错过过一些聚餐；两句话都是真的。'
+    : '有些普通的日子吧。不是因为另一条路一定更好，而是我没法同时把两种生活都留住。';
   if (/快乐|幸福|好吗|过得怎么样|满意/.test(text)) return turn>2?`今天还不错，但上周也有想躲起来的时候。${self.daily_life}`:`有快乐的时候，也有只是把一天过完的时候。${self.daily_life}`;
   if (/遗憾|后悔|失去|代价/.test(text)) return `有。${self.biggest_regret} 我不会把它说成“值得所以没关系”；有些东西失去就是会疼。`;
   if (/得到|收获|值得|成功/.test(text)) return `${self.biggest_gain} 但如果你问我值不值，我没法替当年的你打分。`;
@@ -212,6 +222,6 @@ export function reply(message,self,history=[]) {
   if (/工作|住|城市|现在在哪里|生活/.test(text)) return `我现在的生活是这样：${self.current_scene}。${self.work_or_study} 大多数日子其实很普通。`;
   if (/为什么|当年|选择|如果重来|重新/.test(text)) return `${self.thought_about_real_world} 说出来像很勇敢，其实我那天也怕得不行。`;
   if (/建议|应该|怎么选|怎么办/.test(text)) return '我不想替你选。也许先问问自己：当时知道什么，愿意承担什么，又有什么人能陪你商量？';
-  const gentle=['我听见了。你说这句话的时候，脑子里最先出现的是哪个画面？','嗯。我可能先不急着回答。你现在最想让当年的自己听见什么？','你可以慢一点说。这个故事里，我会在这里听着。'];
-  return `${gentle[turn%gentle.length]} ${turn===0?self.habit:''}`.trim();
+  const gentle=['我想听准你问的部分。你是想知道当年的选择，还是我现在怎么过日子？','这句我没法替你补完。你愿意再说具体一点吗？','我在听。你想从哪一天、哪件小事问起？'];
+  return gentle[turn%gentle.length];
 }

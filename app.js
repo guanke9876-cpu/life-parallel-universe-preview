@@ -1,4 +1,4 @@
-import {MODES,simulate,reply,validateInput} from './engine.js';
+import {MODES,simulate,reply,validateInput} from './engine.js?v=conversation-home-1';
 import {createJourney,advance} from './journey.js';
 import {environmentFor,environmentClasses} from './environment.js';
 import {createTimeline,routeForWorld} from './timeline.js';
