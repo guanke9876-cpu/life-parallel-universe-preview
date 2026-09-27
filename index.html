@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ee">
+  <meta name="description" content="改变一个选择，看看两条假设中的人生世界线。">
+  <title>另一种人生 · Parallel You</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="另一种人生，返回顶部"><span class="brand-mark">∞</span><span>另一种人生<span class="brand-dot">.</span></span></a>
+    <a class="header-link" href="#create">开启一条世界线 <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-line"></span> PARALLEL YOU · 人生平行宇宙</p>
+        <h1 id="hero-title">如果那天，<br>你选择了<span class="highlight">另一条路</span>。</h1>
+        <p class="hero-lede">从一个真实的岔路口出发，走进两种可能的人生。看见收获，也看见代价；然后，和另一个自己聊聊。</p>
+        <a class="primary-link" href="#create">开始探索 <span aria-hidden="true">↗</span></a>
+        <p class="hero-note"><span class="note-icon" aria-hidden="true">✳</span> 假设情景，不是真实历史或未来预测</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+        <div class="art-glow glow-peach"></div><div class="art-glow glow-teal"></div>
+        <div class="art-person person-one"><span>现在的你</span></div>
+        <div class="art-person person-two"><span>另一个你</span></div>
+        <div class="art-cross">✳</div>
+        <div class="art-caption">ONE CHOICE · TWO STORIES</div>
+      </div>
+    </section>
+
+    <section class="studio" id="create" aria-labelledby="studio-title">
+      <div class="wrap">
+        <div class="section-heading"><p class="eyebrow">01 / 选择一个时刻</p><h2 id="studio-title">故事，从这里分岔。</h2><p>可以从演示故事开始，也可以写下你自己的经历。内容只在当前页面使用，刷新后即消失。</p></div>
+        <div class="demo-grid" id="demo-grid" aria-label="演示案例"></div>
+        <form class="story-form" id="story-form" novalidate>
+          <div class="form-intro"><div><p class="eyebrow">YOUR TURN</p><h3>写下那个「如果」</h3></div><span class="form-spark" aria-hidden="true">✳</span></div>
+          <div class="field"><label for="background">当时的生活是什么样？</label><textarea id="background" name="background" rows="3" maxlength="400" placeholder="例如：毕业那年，我已经在熟悉的城市找到稳定工作……" required></textarea><p class="hint">一点背景，会让两条路更贴近你的问题。</p></div>
+          <div class="field-row"><div class="field"><label for="decision">现实中，你做了什么选择？</label><textarea id="decision" name="decision" rows="2" maxlength="220" placeholder="我留在了原来的城市。" required></textarea></div><div class="field"><label for="alternative">这次，改变哪一个选择？</label><textarea id="alternative" name="alternative" rows="2" maxlength="220" placeholder="我接受了另一座城市的邀请。" required></textarea></div></div>
+          <details class="more-context"><summary>补充当时知道的信息 <span>选填</span></summary><div class="field-row"><div class="field"><label for="known_then">当时能知道什么？</label><textarea id="known_then" name="known_then" rows="2" maxlength="300" placeholder="只写当时已经知道的线索。"></textarea></div><div class="field"><label for="learned_later">后来才知道什么？</label><textarea id="learned_later" name="learned_later" rows="2" maxlength="300" placeholder="此项不会用于生成世界线。"></textarea></div></div></details>
+          <div class="form-footer"><div class="field select-field"><label for="horizon_months">向前看多久</label><select id="horizon_months" name="horizon_months"><option value="12">1 年</option><option value="24" selected>2 年</option><option value="36">3 年</option><option value="60">5 年</option></select></div><button class="generate-button" type="submit">打开平行世界 <span aria-hidden="true">↗</span></button></div>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+        </form>
+        <details id="dev-panel" class="dev-panel" hidden><summary>开发模式 · Backend mode</summary><label for="backend-mode">同一界面切换运行模式</label><select id="backend-mode"><option value="mock">mock</option><option value="baseline">baseline</option><option value="iu-enhanced">iu-enhanced</option></select><p>三个模式目前均使用本地确定性演示 adapter；真实模型接口未接入，缺少授权 CONFIG_LOCK 时不会发出模型请求。</p></details>
+      </div>
+    </section>
+
+    <section class="results wrap" id="results" aria-labelledby="results-title" hidden>
+      <div class="section-heading result-heading"><p class="eyebrow">02 / 两条世界线</p><h2 id="results-title">同一个起点，<br>不同的后来。</h2><p>以下是帮助思考的假设故事。真实生活会受到更多人、时机和偶然因素影响。</p></div>
+      <div class="worlds" id="worlds"></div>
+      <div class="uncertainty-card"><span class="uncertainty-icon" aria-hidden="true">◎</span><div><h3>留一点空间给未知</h3><p id="uncertainty-text"></p></div></div>
+      <section class="self-section" aria-labelledby="self-title"><div class="self-intro"><p class="eyebrow">03 / MEET YOUR ALTERNATE SELF</p><h2 id="self-title">和另一个自己，<br>说几句话。</h2><p>这是一位根据假设世界线写出的虚构角色。它不知道未来，也无法代表真实的你或他人。</p><div class="self-avatar" aria-hidden="true">✳</div></div><div class="chat-panel"><div class="chat-header"><span class="chat-avatar" aria-hidden="true">✳</span><div><strong>另一个你</strong><small>来自另一条可能的世界线</small></div><span class="chat-live">故事中</span></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-label="与另一个自己的对话"></div><form class="chat-form" id="chat-form"><label class="sr-only" for="chat-input">想和另一个自己说什么</label><input id="chat-input" maxlength="300" autocomplete="off" placeholder="问问另一个自己，什么值得珍惜……"><button type="submit" aria-label="发送消息">↗</button></form><p class="chat-disclaimer">本地演示对话 · 不会发送给真实模型</p></div></section>
+      <button id="restart-button" class="restart-button" type="button">再试一次选择 ↺</button>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="wrap footer-inner"><span class="footer-brand">另一种人生<span class="brand-dot">.</span></span><p>假设情景，不是真实历史或未来预测。你的输入不会在此网站持久保存。</p><span>PARALLEL YOU · PREVIEW</span></div></footer>
+</body>
+</html>

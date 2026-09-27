@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "synthetic_only": true,
+  "demos": [
+    {
+      "id": "letter",
+      "title": "那封没有寄出的申请",
+      "eyebrow": "人生岔路 · 01",
+      "theme": "career",
+      "background": "毕业那年，我在熟悉的城市有一份稳定工作，也一直想申请一间做独立出版的工作室。",
+      "decision": "我在截止日前没有投递申请。",
+      "alternative": "我在截止日前把作品集寄给那间工作室。",
+      "known_then": "当时只知道岗位竞争激烈，自己有一些作品，但没有内部消息。",
+      "learned_later": "几个月后才听说工作室扩招；这不是当时能预知的结果。",
+      "horizon_months": 24
+    },
+    {
+      "id": "city",
+      "title": "搬去另一座城的夏天",
+      "eyebrow": "人生岔路 · 02",
+      "theme": "city",
+      "background": "工作第三年，我收到外地团队的邀请，家人和朋友大多留在原来的城市。",
+      "decision": "我决定留在原来的城市。",
+      "alternative": "我先去外地试住三个月，再决定是否接受邀请。",
+      "known_then": "当时知道薪酬范围和试住成本，但不了解团队日常氛围。",
+      "learned_later": "后来团队组织架构调整，这件事在选择当时并不确定。",
+      "horizon_months": 36
+    },
+    {
+      "id": "conversation",
+      "title": "那场没有开启的谈话",
+      "eyebrow": "人生岔路 · 03",
+      "theme": "relationship",
+      "background": "我和一位重要的朋友渐渐疏远，双方都在忙各自的生活。",
+      "decision": "我把想说的话留在了草稿箱。",
+      "alternative": "我发出一条简短消息，邀请对方找时间聊聊。",
+      "known_then": "当时只知道我们联系变少，不知道对方真正的想法。",
+      "learned_later": "后来听到的近况不能证明对方当时会怎样回应。",
+      "horizon_months": 12
+    }
+  ]
+}
