@@ -57,4 +57,15 @@
 @media(prefers-reduced-motion:reduce){.pillar,.palace{opacity:1;transform:none}.factor-fill{animation:none}}
 .lens-ribbon{display:flex;align-items:center;justify-content:center;gap:18px;min-height:42px}.lens-ribbon label{display:flex;align-items:center;gap:7px;white-space:nowrap;color:#e4c5ab}.lens-ribbon select{background:#132a2d;color:#f1dfcc;border:1px solid #e3bea25a;border-radius:8px;padding:4px 7px;font-size:10px}.scene-lens-note{margin-top:16px;padding:12px 14px;border-left:2px solid #b9c8b29c;background:#dce4d60d;color:#c5d4ca;font-size:11px;line-height:1.65}
 @media(max-width:650px){.lens-ribbon{justify-content:flex-start;gap:8px;padding:6px 13px}.lens-ribbon span{font-size:9px;line-height:1.4}.lens-ribbon select{font-size:9px}}
+
+/* Product purpose stays near the action, while each mirror explains its own use. */
+.landing-second{max-width:720px;font:normal clamp(19px,2.2vw,26px)/1.65 var(--serif);margin-bottom:10px}
+.landing-outcome{max-width:650px;color:#adc3bd;font-size:14px;line-height:1.75;animation:line-enter .6s var(--ease) .9s both}
+.landing .primary-button{margin-top:15px}
+.landing-boundary{max-width:calc(100% - 48px);line-height:1.6}
+.input-lede{max-width:680px;line-height:1.85}
+.mirror-card .mirror-purpose{max-width:38ch;margin:0 0 22px;padding-left:13px;border-left:2px solid #d9aa84a6;color:#e9dfd1;font:normal 14px/1.8 var(--sans)}
+#epilogue-stage>p.epilogue-reflection{max-width:680px;margin:23px 0 0;padding:14px 19px;border-left:2px solid var(--amber);background:#ffffff0a;color:#e7dfd1;font:normal 14px/1.8 var(--sans)}
+@media(max-width:600px){.landing{height:auto;min-height:calc(100svh - 64px);overflow:visible;padding:47px 0 105px}.landing-copy{margin:0 auto}.landing h1{margin:19px 0 24px}.landing-second{font-size:18px;line-height:1.6}.landing-outcome{font-size:12px;line-height:1.7}.landing .primary-button{margin-top:13px}.landing-boundary{bottom:14px;max-width:calc(100% - 46px);font-size:9px}.mirror-card .mirror-purpose{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.landing-outcome{animation:none}}
 .element-cycle{grid-column:1/-1;margin:5px 0 0!important;text-align:center;font-size:9px!important;letter-spacing:.03em;color:#b8cabb!important}
