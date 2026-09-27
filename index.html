@@ -8,7 +8,7 @@
   <title>另一种人生 · Parallel You</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=why-what-1">
-  <script type="module" src="./app.js?v=self-model-1"></script>
+  <script defer src="./app-bundle.js?v=interaction-1"></script>
 </head>
 <body class="is-landing">
   <header class="site-header">
@@ -22,7 +22,7 @@
   <main>
     <section class="landing" id="landing" aria-labelledby="hero-title">
       <div class="landing-space" aria-hidden="true"><span class="space-grain"></span><span class="space-light"></span><svg viewBox="0 0 1000 650" preserveAspectRatio="xMidYMid slice"><path class="landing-track track-reality" d="M 0 390 C 270 385, 400 375, 495 342 C 620 300, 790 310, 1000 254"/><path class="landing-track track-other" d="M 0 390 C 270 385, 400 375, 495 342 C 635 405, 780 475, 1000 510"/><circle class="landing-fork-point" cx="495" cy="342" r="7"/></svg></div>
-      <div class="landing-copy"><p class="eyebrow">PARALLEL YOU · 一段假设的人生电影</p><h1 id="hero-title">如果那一天，<br>你做了另一个选择呢？</h1><p class="landing-second">从现实经历、人格倾向和传统命理的象征视角，走进一条平行人生，重新理解自己。</p><p class="landing-outcome">回看关键选择，想清它背后的渴望与代价，再想下一步怎么活。</p><button id="open-input" class="primary-button" type="button">去看看另一条人生 <span aria-hidden="true">↗</span></button></div>
+      <div class="landing-copy"><p class="eyebrow">PARALLEL YOU · 一段假设的人生电影</p><h1 id="hero-title">如果那一天，<br>你做了另一个选择呢？</h1><p class="landing-second">从现实经历、人格倾向和传统命理的象征视角，走进一条平行人生，重新理解自己。</p><p class="landing-outcome">回看关键选择，想清它背后的渴望与代价，再想下一步怎么活。</p><button id="open-input" class="primary-button" type="button">去看看另一条人生 <span aria-hidden="true">↗</span></button><p id="startup-status" class="startup-status" role="status" hidden>交互还没有准备好。请重新加载此页；如果仍无反应，可能是浏览器未能加载脚本。</p></div>
       <p class="boundary landing-boundary">假设情景 · 不预言命运、不评判哪条人生更好，也不替你做决定</p>
     </section>
 
@@ -76,5 +76,6 @@
     </section>
   </main>
   <footer class="site-footer"><span>另一种人生 · PARALLEL YOU</span><span>假设情景，不是真实历史或未来预测。输入只在当前页面使用。</span></footer>
+  <script>setTimeout(()=>{if(document.body.dataset.appReady!=='true')document.getElementById('startup-status').hidden=false;},8000);</script>
 </body>
 </html>

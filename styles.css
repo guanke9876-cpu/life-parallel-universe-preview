@@ -61,6 +61,7 @@
 /* Product purpose stays near the action, while each mirror explains its own use. */
 .landing-second{max-width:720px;font:normal clamp(19px,2.2vw,26px)/1.65 var(--serif);margin-bottom:10px}
 .landing-outcome{max-width:650px;color:#adc3bd;font-size:14px;line-height:1.75;animation:line-enter .6s var(--ease) .9s both}
+.startup-status{max-width:600px;margin:18px 0 0;color:#f0c4ad;font-size:12px;line-height:1.7}
 .landing .primary-button{margin-top:15px}
 .landing-boundary{max-width:calc(100% - 48px);line-height:1.6}
 .input-lede{max-width:680px;line-height:1.85}

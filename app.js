@@ -208,5 +208,6 @@ initializeMirrorControls();
 const params=new URLSearchParams(location.search);if(params.get('dev')==='1'){$('dev-panel').hidden=false;if(MODES.includes(params.get('mode')))$('backend-mode').value=params.get('mode');}
 fetch('./demo-data.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('演示案例暂时不可用');return response.json();}).then(data=>{if(!data.synthetic_only||!Array.isArray(data.demos)||data.demos.length<3)throw new Error('演示案例校验失败');demos=data.demos;renderDemos();}).catch(error=>$('demo-grid').append(newElement('p','form-error',`${error.message}。仍可填写自己的故事。`)));
 render();
+document.body.dataset.appReady='true';
 const shared=parseFullStoryLink(location.hash);
 if(shared){const checked=validateInput(shared);if(checked.ok){for(const key of ['background','decision','alternative','known_then','learned_later','horizon_months','when','person'])if(form.elements.namedItem(key))form.elements.namedItem(key).value=shared[key]??'';inputValues=shared;syntheticDemo=false;move('OPEN_INPUT');move('READY');move('MIRRORS_DONE');history.replaceState(null,'',`${location.pathname}${location.search}`);}}
