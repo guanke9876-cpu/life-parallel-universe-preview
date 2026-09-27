@@ -151,9 +151,10 @@ function genericMeeting(data,theme) {
   };
 }
 function localStory(data) {
-  const curated=CURATED[data.demo_id], authored=WRITING[data.demo_id], theme=themeFor(data);
-  const source=curated&&authored?curated:null;
-  const writing=source?authored:null;
+  const theme=themeFor(data);
+  const hasDemo=Object.hasOwn(CURATED,data.demo_id)&&Object.hasOwn(WRITING,data.demo_id);
+  const source=hasDemo?CURATED[data.demo_id]:null;
+  const writing=hasDemo?WRITING[data.demo_id]:null;
   const base=source?.fork ?? `在「${short(data.background,90)}」的生活里，你面前有两个动作。故事从同一个时刻开始，不替任何一个选择预先宣判。`;
   const paths=['original','alternate'];
   const worldlines=paths.map((path,index)=>{
@@ -167,7 +168,7 @@ function localStory(data) {
     };
   });
   const persona=source?.self??genericSelf(data,theme);
-  const extra=selfExtras[data.demo_id]??{
+  const extra=(Object.hasOwn(selfExtras,data.demo_id)?selfExtras[data.demo_id]:null)??{
     daily:'过着有工作、休息、消息和琐事的普通日子；不是每天都在经历转折。',habit:'做决定前先写下自己目前知道和不知道的事。',problem:'还在处理这条路带来的日常摩擦。',doubt:'偶尔也会想，原来的选择会不会更适合那时的自己。',
   };
   const meetingSource=writing?.meeting??genericMeeting(data,theme);
