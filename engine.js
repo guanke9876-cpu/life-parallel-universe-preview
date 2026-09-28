@@ -161,6 +161,10 @@ function localStory(data) {
   const paths=['original','alternate'];
   const worldlines=paths.map((path,index)=>{
     const seeds=source?source[path].concat(writing[path].present):genericScenes(data,path,theme).concat(genericPresent(data,theme,path));
+    if(!source&&/^(未来假设：|当前选择：)/.test(data.background??'')){
+      seeds.forEach(seed=>{seed.moment='在这条尚未发生的假设路里，'+seed.moment.replaceAll('当年','最初');seed.uncertain='以下不是已经发生的经历，也不是未来预测。'+seed.uncertain;});
+      seeds[5].time=`假设的 ${data.horizon_months||24} 个月后`;seeds[5].place='假设生活的一个普通日子';
+    }
     const style=writing?.[path];
     const textures=style?.texture??genericTexture[path];
     return {
