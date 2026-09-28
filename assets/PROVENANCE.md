@@ -7,3 +7,4 @@ Created for this prototype with the built-in imagegen tool on 2026-09-28. Origin
 - love-memory.png: two people separated by a seat at a bus shelter.
 
 The app uses three reusable stills with camera motion. It does not generate videos or new images per visitor. Original full-resolution PNGs are retained as shipped assets.
+- school-memory.png: empty classroom at late afternoon, notebook and an open door; created with imagegen from generic art direction, no personal inputs, on 2026-09-28.

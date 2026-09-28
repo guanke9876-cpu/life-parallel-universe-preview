@@ -26,8 +26,9 @@ export function validateInput(raw) {
 }
 
 function themeFor(data) {
-  if (['career','city','relationship'].includes(data.theme)) return data.theme;
+  if (['career','city','relationship','education'].includes(data.theme)) return data.theme;
   const text=`${data.background} ${data.decision} ${data.alternative}`;
+  if (/学业与成长|升学|转学|选校|中考|高考/.test(text)) return 'education';
   if (/亲情|友情|爱情|家人|父母|朋友|恋人|关系|告白|聊天|谈话|联系/.test(text)) return 'relationship';
   if (/搬|城市|异地|迁居|住/.test(text)) return 'city';
   if (/工作|申请|职业|公司|学校|专业|创业/.test(text)) return 'career';
@@ -42,6 +43,7 @@ const times = {
   120:['选择当晚','3 个月后','1 年后','5 年后','10 年后'],
 };
 const motifs = {
+  education:{object:'课桌上的一页笔记',place:'放学后的校园走廊',gain:'对兴趣、学习节奏和支持的具体认识',cost:'原先熟悉的安排与相处时间'},
   career:{object:'一页未完成的作品',place:'工作日结束后的桌前',gain:'更清楚自己愿意投入的方向',cost:'可以自由支配的时间'},
   city:{object:'一张还没收进抽屉的车票',place:'一条渐渐熟悉的街',gain:'对生活环境更具体的判断',cost:'想见就见的距离'},
   relationship:{object:'手机里那段没有写完的话',place:'回家途中的街角',gain:'表达自己感受的勇气',cost:'对某种回应的期待'},
@@ -105,7 +107,7 @@ function genericSelf(data,theme) {
   const motif=motifs[theme];
   return {
     city:'未指定城市 · 由你的故事留白',
-    work:'继续处理自己的工作与日常；这条假设路也有琐碎、疲惫和普通的早晨。',
+    work:theme==='education'?'在新的学习安排里了解自己的兴趣，也继续面对练习、求助和休息的取舍。':'继续处理自己的工作与日常；这条假设路也有琐碎、疲惫和普通的早晨。',
     ties:'和重要的人仍需沟通、约定与尊重；任何人的回应都不能由故事决定。',
     character:'更愿意承认自己不确定，也更敢把想法变成小行动。',
     regret:`没能同时保有所有选择；也曾为${motif.cost}感到难过。`,
@@ -127,7 +129,7 @@ const genericPresent=(data,theme,path)=>({
   shift:'每一次后来的调整，都受到最初选择与新经历的共同影响。',
   gained:path==='alternate'?motifs[theme].gain:'熟悉资源中的新主动权',
   lost:path==='alternate'?motifs[theme].cost:'那次尝试的直接经验',
-  feeling:'带着遗憾，也仍能往前',uncertain:'未来仍会继续分岔，无法由一个故事确定。',
+  feeling:'带着自己的感受，继续理解这条路',uncertain:'未来仍会继续分岔，无法由一个故事确定。',
 });
 function sceneToContract(seed,texture,index,writing) {
   const scene_text=`${seed.moment}${texture}${seed.shift}`;
@@ -169,7 +171,7 @@ function localStory(data) {
   });
   const persona=source?.self??genericSelf(data,theme);
   const extra=(Object.hasOwn(selfExtras,data.demo_id)?selfExtras[data.demo_id]:null)??{
-    daily:'过着有工作、休息、消息和琐事的普通日子；不是每天都在经历转折。',habit:'做决定前先写下自己目前知道和不知道的事。',problem:'还在处理这条路带来的日常摩擦。',doubt:'偶尔也会想，原来的选择会不会更适合那时的自己。',
+    daily:theme==='education'?'在学习、活动和休息之间安排日常；一次选择不能决定全部成长。':'过着有工作、休息、消息和琐事的普通日子；不是每天都在经历转折。',habit:'做决定前先写下自己目前知道和不知道的事。',problem:'还在处理这条路带来的日常摩擦。',doubt:'偶尔也会想，原来的选择会不会更适合那时的自己。',
   };
   const meetingSource=writing?.meeting??genericMeeting(data,theme);
   const meeting={setting:meetingSource.setting,scene:meetingSource.scene,first_difference:meetingSource.first_difference,first_words:meetingSource.first_words};
