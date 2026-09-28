@@ -1,3 +1,4 @@
+import {installVoiceInputs} from './voice-input.js';
 import {MODES,simulate,reply,validateInput} from './engine.js?v=conversation-home-1';
 import {createJourney,advance} from './journey.js';
 import {environmentFor,environmentClasses} from './environment.js';
@@ -75,7 +76,8 @@ function renderSymbolicReading(){
 
 function schedule(fn,ms){const current=epoch;const id=setTimeout(()=>{timers.delete(id);if(current===epoch)fn();},durationFor(ms,{quick:journey.quick,reduced:prefersReduced()}));timers.add(id);return id;}
 function clearScheduled(){for(const id of timers)clearTimeout(id);timers.clear();epoch++;}
-function move(event,payload){clearScheduled();journey=advance(journey,event,payload);render();}
+let voiceInputs=null;
+function move(event,payload){voiceInputs?.cancel();clearScheduled();journey=advance(journey,event,payload);render();}
 function scrollTop(){window.scrollTo({top:0,behavior:'auto'});}
 function showError(message){$('form-error').textContent=message;$('form-error').hidden=!message;}
 function worldLabel(world){return routeForWorld(world)==='A'?'WORLD A':'WORLD B';}
@@ -274,6 +276,7 @@ $('share-preview').addEventListener('click',async()=>{const full=$('share-full-s
 $('save-card').addEventListener('click',()=>{const card=cardContent(story,{syntheticDemo}),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1080;const ctx=canvas.getContext('2d');if(!ctx){$('share-status').textContent='此浏览器暂不支持保存图片。';return;}const gradient=ctx.createLinearGradient(0,0,1080,1080);gradient.addColorStop(0,'#10242d');gradient.addColorStop(1,'#325457');ctx.fillStyle=gradient;ctx.fillRect(0,0,1080,1080);ctx.strokeStyle='#e0ad88';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(95,810);ctx.bezierCurveTo(330,810,450,690,970,640);ctx.stroke();ctx.strokeStyle='#96c8c0';ctx.beginPath();ctx.moveTo(95,810);ctx.bezierCurveTo(330,810,470,900,970,920);ctx.stroke();ctx.fillStyle='#e4b792';ctx.font='28px sans-serif';ctx.fillText('PARALLEL YOU',88,117);ctx.fillStyle='#f4ece0';ctx.font='bold 43px sans-serif';ctx.fillText(card.title.slice(0,16),88,220);ctx.fillStyle='#bdd5ca';ctx.font='27px sans-serif';ctx.fillText(card.fork.slice(0,25),88,285);ctx.fillStyle='#f4ece0';ctx.font='bold 48px serif';const quote=`“${card.quote}”`;for(let i=0;i<quote.length;i+=17)ctx.fillText(quote.slice(i,i+17),88,410+Math.floor(i/17)*68);ctx.fillStyle='#bed1c7';ctx.font='22px sans-serif';ctx.fillText(card.note,88,990);const link=document.createElement('a');link.download='parallel-you-safe-card.png';link.href=canvas.toDataURL('image/png');link.click();$('share-status').textContent='安全卡片已保存，不包含私人输入或对话。';});
 
 initializeMirrorControls();
+voiceInputs=installVoiceInputs(document,window);
 const params=new URLSearchParams(location.search);if(params.get('dev')==='1'){$('dev-panel').hidden=false;if(MODES.includes(params.get('mode')))$('backend-mode').value=params.get('mode');}
 fetch('./demo-data.json',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error('演示案例暂时不可用');return response.json();}).then(data=>{if(!data.synthetic_only||!Array.isArray(data.demos)||data.demos.length<3)throw new Error('演示案例校验失败');demos=data.demos;renderDemos();}).catch(error=>$('demo-grid').append(newElement('p','form-error',`${error.message}。仍可填写自己的故事。`)));
 render();
