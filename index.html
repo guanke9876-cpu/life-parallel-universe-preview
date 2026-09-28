@@ -7,8 +7,8 @@
   <meta name="description" content="从现实经历、人格倾向和传统象征等角度，走进一个选择的平行人生，更清楚地认识自己。">
   <title>另一种人生 · Parallel You</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=why-what-1">
-  <script defer src="./app-bundle.js?v=interaction-1"></script>
+  <link rel="stylesheet" href="./styles.css?v=cinematic-fork-2">
+  <script defer src="./app-bundle.js?v=cinematic-fork-2"></script>
 </head>
 <body class="is-landing">
   <header class="site-header">
@@ -55,9 +55,9 @@
     <section class="experience" id="experience" aria-label="平行人生叙事体验" hidden>
       <div class="experience-top"><span>PARALLEL YOU</span><div id="timeline-shell" class="timeline-shell" aria-hidden="true"></div><span class="boundary">假设情景 · 非历史或预测</span></div><div class="lens-ribbon"><label for="story-lens-mode">镜头 <select id="story-lens-mode"><option value="reality">现实</option><option value="psychology">心理</option><option value="symbolic">命理</option><option value="fusion">融合</option><option value="custom">自选</option></select></label><span id="lens-ribbon-note"></span></div>
       <div class="experience-body">
-        <div id="fork-stage" class="stage fork-stage" hidden><p class="stage-kicker">THE FORK · 那一天</p><h2>那一天。</h2><p class="fork-pause">你选择了……</p><p id="fork-original" class="fork-original"></p><p class="fork-ask">这一次呢？</p><p id="fork-alternative" class="fork-alternative"></p><button id="choose-change" class="primary-button" type="button">改变这一次 ↗</button><p id="fork-direction" class="fork-direction" hidden>REALITY → COUNTERFACTUAL</p><p id="fork-context" class="subtle-copy"></p></div>
+        <div id="fork-stage" class="stage fork-stage" hidden><p class="stage-kicker">THE FORK · 那一天</p><h2>那一天。</h2><p class="fork-pause">你选择了……</p><p id="fork-original" class="fork-original"></p><p class="fork-ask">这一次呢？</p><p id="fork-alternative" class="fork-alternative"></p><div class="fork-path" aria-hidden="true"><svg viewBox="0 0 720 130" preserveAspectRatio="none"><path class="fork-stem" d="M 18 65 H 305"/><path class="fork-route fork-route-reality" d="M 305 65 C 410 65 475 22 702 22"/><path class="fork-route fork-route-changed" d="M 305 65 C 410 65 475 108 702 108"/><circle class="fork-junction" cx="305" cy="65" r="5"/><circle class="fork-destination" cx="702" cy="108" r="6"/></svg><span class="fork-label fork-label-reality">原来的路</span><span class="fork-label fork-label-changed">改变的路</span></div><button id="choose-change" class="primary-button" type="button">改变这一次 ↗</button><p id="fork-direction" class="fork-direction" hidden>REALITY → COUNTERFACTUAL</p><p id="fork-context" class="subtle-copy"></p></div>
 
-        <div id="transition-stage" class="stage formation-stage" hidden><p class="stage-kicker">SIMULATION FORMATION</p><h2>世界正在形成。</h2><div class="formation-visual" aria-hidden="true"><div id="formation-timeline" class="formation-timeline"></div><svg class="formation-possibilities" viewBox="0 0 970 225"><path d="M 390 100 C 480 45, 580 70, 700 25"/><path d="M 470 95 C 600 150, 690 110, 790 82"/><path d="M 520 127 C 610 200, 730 192, 850 218"/><path d="M 340 112 C 430 160, 520 180, 620 205"/></svg></div><p id="transition-caption" role="status">固定那一天之前已经发生的事</p><button id="skip-transition" class="quiet-button" type="button">跳过过场 →</button></div>
+        <div id="transition-stage" class="stage formation-stage" hidden><div id="formation-environment" class="scene-environment" aria-hidden="true"></div><p class="stage-kicker">SIMULATION FORMATION</p><h2>一条路，正在向前。</h2><div class="formation-visual" aria-hidden="true"><div id="formation-timeline" class="formation-timeline"></div></div><div class="formation-progress"><span id="formation-step">00 / 06</span><span id="formation-time">从那一天开始</span></div><p id="transition-caption" role="status">先把那一天以前的事留在原处。</p><button id="skip-transition" class="quiet-button" type="button">跳过过场 →</button></div>
 
         <div id="divergence-stage" class="stage divergence-stage" hidden><div id="divergence-environment" class="scene-environment" aria-hidden="true"></div><div class="divergence-content"><p class="stage-kicker">CHAPTER 01 · FIRST DIVERGENCE</p><p id="divergence-time" class="divergence-time"></p><p id="divergence-place" class="divergence-place"></p><h2 id="divergence-title"></h2><div id="divergence-copy" class="narrative-paragraphs"></div><button id="enter-chapters" class="primary-button" type="button" hidden>沿这条路往前 ↗</button></div></div>
 

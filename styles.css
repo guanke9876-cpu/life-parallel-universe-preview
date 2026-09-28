@@ -70,3 +70,37 @@
 @media(max-width:600px){.landing{height:auto;min-height:calc(100svh - 64px);overflow:visible;padding:47px 0 105px}.landing-copy{margin:0 auto}.landing h1{margin:19px 0 24px}.landing-second{font-size:18px;line-height:1.6}.landing-outcome{font-size:12px;line-height:1.7}.landing .primary-button{margin-top:13px}.landing-boundary{bottom:14px;max-width:calc(100% - 46px);font-size:9px}.mirror-card .mirror-purpose{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.landing-outcome{animation:none}}
 .element-cycle{grid-column:1/-1;margin:5px 0 0!important;text-align:center;font-size:9px!important;letter-spacing:.03em;color:#b8cabb!important}
+
+/* The fork draws only the selected route; formation then grows six story nodes. */
+.fork-stage.is-branching:before,.fork-stage.is-branching:after{display:none}
+.fork-path{position:relative;width:min(680px,100%);height:122px;margin:4px auto 14px;animation:line-enter .45s var(--ease) 2.12s both}
+.fork-path svg{display:block;width:100%;height:100%;overflow:visible}
+.fork-path path{fill:none;stroke-linecap:round;stroke-width:2}
+.fork-stem{stroke:#d9d3c5;opacity:.65}
+.fork-route-reality{stroke:#9ab6b1;opacity:.5}
+.fork-route-changed{stroke:#e5ae89;stroke-width:3!important;stroke-dasharray:610;stroke-dashoffset:610;filter:drop-shadow(0 0 5px #e6b08a7a)}
+.fork-junction{fill:#e6bd9d;filter:drop-shadow(0 0 8px #edc2a4)}
+.fork-destination{fill:#e5ae89;opacity:.15;transition:opacity .35s ease .55s,filter .35s ease .55s}
+.fork-label{position:absolute;right:1%;font-size:10px;letter-spacing:.12em;color:#a8c3ba}
+.fork-label-reality{top:2px}.fork-label-changed{bottom:0;color:#a48e7c;transition:color .3s}
+.fork-stage.is-branching .fork-route-changed{animation:fork-route-draw .95s var(--ease) forwards}
+.fork-stage.is-branching .fork-destination{opacity:1;filter:drop-shadow(0 0 11px #e6b08a)}
+.fork-stage.is-branching .fork-label-changed{color:#f0c7a5}
+.fork-stage.is-branching .fork-original{opacity:.55;transition:opacity .5s}
+.formation-stage{background:radial-gradient(ellipse at 53% 59%,#19313a,transparent 54%),#081720}
+.formation-stage>:not(.scene-environment){position:relative;z-index:1}
+.formation-stage .scene-environment{opacity:0;transition:opacity .8s var(--ease)}
+.formation-stage.has-first-glimpse .scene-environment{opacity:.25}
+.formation-stage:after{display:none}
+.formation-timeline{margin-bottom:4px}
+.formation-timeline .timeline-drawn{transition-duration:.38s}
+.formation-progress{display:flex;justify-content:space-between;gap:15px;width:min(790px,100%);margin:0 auto 15px;padding:13px 8px 0;border-top:1px solid #d7b28d42;text-align:left;color:#b9ccc4;font-size:11px;letter-spacing:.08em}
+.formation-progress #formation-step{flex:none;color:#e6b996;font-weight:700;font-variant-numeric:tabular-nums}
+.formation-progress #formation-time{text-align:right;overflow-wrap:anywhere}
+.formation-stage #transition-caption{max-width:680px;margin:0;font-size:clamp(17px,2vw,22px)}
+@keyframes fork-route-draw{to{stroke-dashoffset:0}}
+@media(max-width:600px){.fork-path{height:84px;margin:0 auto 11px}.fork-label{font-size:8px}.formation-timeline{height:150px}.formation-progress{font-size:9px;line-height:1.5}.formation-stage #transition-caption{font-size:17px}}
+.quick-mode .fork-path,.quick-mode .fork-stage.is-branching .fork-route-changed{animation:none!important}
+.quick-mode .fork-stage.is-branching .fork-route-changed{stroke-dashoffset:0}
+.quick-mode .formation-stage .scene-environment{transition:none}
+@media(prefers-reduced-motion:reduce){.fork-path,.fork-stage.is-branching .fork-route-changed{animation:none!important}.fork-stage.is-branching .fork-route-changed{stroke-dashoffset:0}}

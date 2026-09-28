@@ -122,22 +122,31 @@ function verifyStoryContract(candidate){if(!candidate?.fork||candidate.worldline
 function formWorld(){try{story=simulate(inputValues,$('dev-panel').hidden?'mock':$('backend-mode').value);selfRecords=assembleSelfModel({reality:inputValues.background,score:scoreMiniIpip(psychAnswers),mbti:$('mbti-type').value,birth:birthValues(),chart:symbolicResult?.chart}).concat(tagNarrativeEvidence({input:inputValues,story,mode:lensMode}));return true;}catch(error){showError(error.message||'故事暂时无法形成。');$('transition-caption').textContent='故事暂时无法形成，请重新选择。';$('skip-transition').textContent='返回输入';return false;}}
 function renderFormation(){
   ensureTimelines();$('skip-transition').textContent='跳过过场 →';
-  if(switchingWorld){
-    $('transition-caption').textContent='回到那一天，另一条路仍在。';
-    formationTimeline.update({world:journey.world===1?0:1,chapter:5,completed:[true,true],phase:'formation'},{animate:false});
-    schedule(()=>formationTimeline.update({world:journey.world,chapter:0,completed:[false,false],phase:'formation'},{animate:!fast()}),180);
-    schedule(()=>{$('transition-caption').textContent='沿另一条世界线继续向前';formationTimeline.update({world:journey.world,chapter:5,completed:[true,true],phase:'formation'},{animate:!fast()});},850);
-    schedule(()=>{switchingWorld=false;move('FORMED');},2150);
-    return;
+  const returning=switchingWorld;
+  $('formation-step').textContent='00 / 06';
+  $('formation-time').textContent='从那一天开始';
+  $('transition-caption').textContent=returning?'回到同一个岔路口，走向另一种可能。':'先把那一天以前的事留在原处。';
+  if(!returning){
+    const checked=validateInput(inputValues);
+    if(!checked.ok){$('transition-caption').textContent=checked.error;$('skip-transition').textContent='返回输入';return;}
+    if(!formWorld())return;
   }
-  $('transition-caption').textContent='固定那一天之前已经发生的事';
-  const checked=validateInput(inputValues);
-  if(!checked.ok){$('transition-caption').textContent=checked.error;$('skip-transition').textContent='返回输入';return;}
-  formationTimeline.update({world:journey.world,chapter:0,completed:[false,false],phase:'formation'},{animate:false});
-  schedule(()=>{if(!formWorld())return;$('transition-caption').textContent='让一个选择产生第一圈涟漪';formationTimeline.update({world:journey.world,chapter:5,completed:[true,true],phase:'formation'},{animate:!fast()});},160);
-  schedule(()=>{if(!story)return;try{verifyStoryContract(story);$('transition-caption').textContent='检查六幕的因果与不确定性';}catch(error){story=null;$('transition-caption').textContent=error.message;$('skip-transition').textContent='返回输入';}},780);
-  schedule(()=>{if(!story)return;for(const line of story.worldlines)for(const scene of line.scenes)environmentFor(scene);$('transition-caption').textContent='正在寻找很多年后的你';},1550);
-  schedule(()=>{if(story)move('FORMED');},2700);
+  try{verifyStoryContract(story);for(const line of story.worldlines)for(const scene of line.scenes)environmentFor(scene);}
+  catch(error){story=null;$('transition-caption').textContent=error.message;$('skip-transition').textContent='返回输入';return;}
+  $('transition-stage').classList.remove('has-first-glimpse');
+  addEnvironment('formation-environment',story.worldlines[journey.world].scenes[0],{lowMotion:true});
+  const completed=returning?[...journey.completed]:[false,false];
+  const routeState=chapter=>({world:journey.world,chapter,completed,phase:'formation'});
+  formationTimeline.update(routeState(-1),{animate:false});
+  const captions={0:'一个选择，先改变眼前的日常。',3:'有些影响，要过几年才看得见。',5:'这个现在，只是一种可能。'};
+  story.worldlines[journey.world].scenes.forEach((scene,index)=>schedule(()=>{
+    if(index===0)$('transition-stage').classList.add('has-first-glimpse');
+    formationTimeline.update(routeState(index),{animate:!fast()});
+    $('formation-step').textContent=`${String(index+1).padStart(2,'0')} / 06`;
+    $('formation-time').textContent=`${scene.time_label} · ${scene.location}`;
+    if(captions[index])$('transition-caption').textContent=captions[index];
+  },300+index*390));
+  schedule(()=>{switchingWorld=false;move('FORMED');},3100);
 }
 function skipFormation(){if(!story&&!formWorld()){move('RESTART');move('OPEN_INPUT');return;}try{verifyStoryContract(story);}catch{move('RESTART');move('OPEN_INPUT');return;}switchingWorld=false;move('FORMED');}
 
