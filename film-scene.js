@@ -1,4 +1,4 @@
-import {attachSceneVideo} from './scene-video.js';
+import {createCodeCinema} from './code-cinema.js';
 // Product-authored 2D sets and actors. Text selects bounded visual motifs, never generated markup.
 export function shotFor(scene,{meeting=false}={}){
  const text=`${scene.location??''} ${scene.scene_text??''}`;
@@ -12,11 +12,8 @@ export function visualFor(scene,options={}){
  return {kind,src:`./assets/${kind}-memory.png`};
 }
 export function createFilmScene(scene,options={},doc=document){
- const shot=shotFor(scene,options),visual=visualFor(scene,options),figure=doc.createElement('figure');
- figure.className=`film-scene cinematic-still still-${visual.kind}${options.meeting?' still-meeting':''}`;
- const frame=doc.createElement('div');frame.className='still-frame';
- const image=doc.createElement('img');image.setAttribute('src',visual.src);image.setAttribute('width','1672');image.setAttribute('height','941');image.setAttribute('decoding','async');
- image.setAttribute('alt',({school:'夕阳照进空教室，课桌上的笔记与打开的门。',family:'灯下的餐桌与空椅子，一个人停在门口。',friend:'雨后的咖啡馆里，两个人隔着桌子认真倾听。',love:'候车亭里，两个人之间留着一个空座位。'})[visual.kind]+'AI创作的虚构场景意象，并非本人或真实记忆。');
- const caption=doc.createElement('figcaption');caption.textContent=`${shot.caption} · 虚构场景意象`;
- frame.append(image);attachSceneVideo(frame,scene,visual.src,{doc,purpose:options.meeting?"meeting":"chapter"});figure.append(frame,caption);return figure;
+ const figure=doc.createElement('figure');figure.className='film-scene code-film';
+ figure.append(createCodeCinema(scene,options,doc));
+ const caption=doc.createElement('figcaption');caption.textContent='假设情景，不是真实历史或未来预测。场景与动作由预设规则编排，不复原本人。';
+ figure.append(caption);return figure;
 }
