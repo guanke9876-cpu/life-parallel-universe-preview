@@ -28,7 +28,7 @@ export function validateInput(raw) {
 function themeFor(data) {
   if (['career','city','relationship'].includes(data.theme)) return data.theme;
   const text=`${data.background} ${data.decision} ${data.alternative}`;
-  if (/朋友|恋人|关系|告白|聊天|谈话|联系/.test(text)) return 'relationship';
+  if (/亲情|友情|爱情|家人|父母|朋友|恋人|关系|告白|聊天|谈话|联系/.test(text)) return 'relationship';
   if (/搬|城市|异地|迁居|住/.test(text)) return 'city';
   if (/工作|申请|职业|公司|学校|专业|创业/.test(text)) return 'career';
   return 'general';
