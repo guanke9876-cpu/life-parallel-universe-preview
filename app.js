@@ -7,6 +7,7 @@ import {durationFor} from './motion.js';
 import {MINI_IPIP,FACTORS,scoreMiniIpip} from './psychometrics.js';
 import {activeLenses,MODE_LABELS,assembleSelfModel,tagNarrativeEvidence,mbtiNarrative} from './self-model.js';
 import {calculateSymbolicBirth} from './symbolic.js';
+import {psychologyPortrait,symbolicPortrait,decisionReflections} from './lens-reflection.js';
 
 const $=id=>document.getElementById(id);
 const form=$('story-form');
@@ -23,6 +24,54 @@ let lensMode='reality',lensFlags=activeLenses('reality'),psychAnswers={},symboli
 const psychSelects=[];
 let sceneLensNode=null;
 let chartRequest=0;
+let reflectionSource=null;
+
+function clearReflection(source){if(reflectionSource===source){$('decision-reflection').value='';reflectionSource=null;}}
+function carriedQuestion(){
+  if(reflectionSource==='psychology'&&(!lensFlags['big-five']||scoreMiniIpip(psychAnswers).status!=='SCORED'))return '';
+  if(reflectionSource==='symbolic'&&(!lensFlags.symbolic||!symbolicResult?.chart))return '';
+  if(reflectionSource==='mbti'&&(!lensFlags.mbti||!$('mbti-type').value))return '';
+  return $('decision-reflection').value.trim();
+}
+function bridgeData(){return decisionReflections({input:inputValues??{},score:scoreMiniIpip(psychAnswers),mbti:$('mbti-type').value,chart:symbolicResult?.chart,flags:lensFlags,focus:$('decision-focus').value||'general'});}
+function renderDecisionBridge(){
+  const data=bridgeData();
+  for(const id of ['mirror-decision-bridge','fork-decision-bridge']){
+    const root=$(id);root.replaceChildren();
+    root.append(newElement('p','decision-pair',`原来的选择：${data.original}\n想改变为：${data.alternative}`));
+    const question=carriedQuestion();
+    if(question)root.append(newElement('blockquote','selected-question',`你选定的问题：${question}`));
+    if(!data.groups.length)root.append(newElement('p','mirror-fineprint','目前只展示现实视角。可以写下你自己的问题；开启心理或命理镜头后，会出现对应的反思线索。'));
+    for(const group of data.groups){
+      const details=newElement('details','decision-lens');
+      details.append(newElement('summary','',`${group.title} · ${data.focus}`),newElement('p','mirror-fineprint',group.note));
+      for(const item of group.items){
+        const card=newElement('section','reflection-option');
+        card.append(newElement('strong','',item.title),newElement('p','',item.text),newElement('p','reflection-question',item.question));
+        const choose=newElement('button','quiet-button','带着这个问题体验');choose.type='button';
+        choose.addEventListener('click',()=>{$('decision-reflection').value=item.question;reflectionSource=group.source;renderDecisionBridge();});
+        card.append(choose);details.append(card);
+      }
+      root.append(details);
+    }
+  }
+}
+function renderPsychologyReading(score){
+  const root=$('psych-portrait');root.replaceChildren();root.hidden=!lensFlags['big-five'];
+  const rows=psychologyPortrait(score,$('decision-focus').value||'general');
+  if(!rows.length)return;
+  root.append(newElement('p','mirror-fineprint','以下按计分均值相对 3 的方向描述本次回答，不是人群高低分界或百分位。当前自评也不自动代表当年的你。'));
+  for(const row of rows){const panel=newElement('details','portrait-detail');panel.append(newElement('summary','',`${row.name} · ${row.raw} / 20`),newElement('p','',row.text),newElement('p','reflection-question',row.question));root.append(panel);}
+}
+function renderSymbolicReading(){
+  const root=$('symbolic-reading');root.replaceChildren();
+  const reading=symbolicPortrait(symbolicResult?.chart,$('decision-focus').value||'general');
+  if(!reading)return;
+  root.append(newElement('p','',`你的日柱是 ${symbolicResult.chart.bazi.pillars[2]}，日干为 ${reading.dayStem}。以下是本产品创作的象征提问，不是命盘断语。`),newElement('p','mirror-fineprint','五行数量只统计四柱表面八个字，不是完整藏干、旺衰或喜用神分析；数量少不代表命里缺少某种能力。'));
+  for(const item of reading.elements){const panel=newElement('details','portrait-detail');panel.append(newElement('summary','',`${item.name} · ${item.count} 个表面字 · 借“${item.theme}”提问`),newElement('p','reflection-question',item.question));root.append(panel);}
+  for(const palace of reading.palaces){const panel=newElement('details','portrait-detail');panel.append(newElement('summary','',`${palace.name} · ${palace.theme}${palace.relevant?' · 与当前主题相关':''}`),newElement('p','',`盘面主星：${palace.stars.join('、')||'无主星'}。只记录库的排盘结果，不以星曜判断该领域好坏。`),newElement('p','reflection-question',palace.question));root.append(panel);}
+  if(!reading.palaces.length)root.append(newElement('p','mirror-fineprint','尚无紫微盘，当前只展示八字的象征提问。'));
+}
 
 function schedule(fn,ms){const current=epoch;const id=setTimeout(()=>{timers.delete(id);if(current===epoch)fn();},durationFor(ms,{quick:journey.quick,reduced:prefersReduced()}));timers.add(id);return id;}
 function clearScheduled(){for(const id of timers)clearTimeout(id);timers.clear();epoch++;}
@@ -49,7 +98,7 @@ function initializeMirrorControls(){
     const english=newElement('small','',item.english);label.append(english);
     const select=newElement('select');select.setAttribute('aria-label',`${index+1}. ${item.chinese}`);
     for(const [value,caption] of [['','请选择'],['1','非常不贴切'],['2','有些不贴切'],['3','中间'],['4','有些贴切'],['5','非常贴切']]){const option=newElement('option','',caption);option.value=value;select.append(option);}
-    select.addEventListener('change',()=>{if(select.value)psychAnswers[item.id]=Number(select.value);else delete psychAnswers[item.id];renderPsychometric();});
+    select.addEventListener('change',()=>{clearReflection('psychology');if(select.value)psychAnswers[item.id]=Number(select.value);else delete psychAnswers[item.id];renderPsychometric();});
     label.append(select);questions.append(label);psychSelects.push(select);
   }
   const mbti=$('mbti-type');
@@ -62,10 +111,12 @@ function renderPsychometric(){
   else for(const factor of FACTORS){const row=newElement('div','factor-row');row.append(newElement('span','',factor),newElement('strong','',`${scored.scores[factor]} / 20`));const rail=newElement('div','factor-rail'),fill=newElement('i','factor-fill');fill.style.setProperty('--factor-width',`${(scored.scores[factor]-4)/16*100}%`);rail.append(fill);row.append(rail);viz.append(row);}
   $('mbti-label').textContent=$('mbti-type').value?`你选择用 ${$('mbti-type').value} 描述自己：${mbtiNarrative($('mbti-type').value)}。这只是自选叙事语言，不由 Big Five 推导，也不承担预测权重。`:'MBTI 不从 Big Five 推导，也不承担预测权重。';
   selfRecords=assembleSelfModel({reality:inputValues?.background??'',score:scored,mbti:$('mbti-type').value,birth:birthValues(),chart:symbolicResult?.chart});
+  renderPsychologyReading(scored);renderDecisionBridge();
 }
 function renderSymbolicChart(){
   const pillars=$('four-pillars'),elements=$('five-elements'),palaces=$('ziwei-palaces');
   pillars.replaceChildren();elements.replaceChildren();palaces.replaceChildren();
+  renderSymbolicReading();renderDecisionBridge();
   const chart=symbolicResult?.chart;if(!chart)return;
   for(const [index,text] of chart.bazi.pillars.entries()){const card=newElement('div','pillar');card.append(newElement('small','',['年柱','月柱','日柱','时柱'][index]),newElement('strong','',text));pillars.append(card);schedule(()=>card.classList.add('is-visible'),index*180);}
   for(const [name,count] of Object.entries(chart.bazi.elements)){const item=newElement('div','element');item.append(newElement('span','',name),newElement('i','', '●'.repeat(count)||'○'),newElement('small','',String(count)));elements.append(item);}
@@ -89,15 +140,22 @@ function renderMirrors(){
   renderPsychometric();renderSymbolicChart();
 }
 function lensAnnotation(){
-  if(lensMode==='reality')return '现实镜头 · 这一幕是反事实场景，并非你真实经历。';
-  if(lensMode==='psychology'){const score=scoreMiniIpip(psychAnswers);return score.status==='SCORED'?`心理镜头 · 你当前自评的外向维度为 ${score.scores['外向']} / 20；这不能解释或预言这一幕。`:'心理镜头 · 尚无完整量表分数；不从未完成的回答推断这一幕。';}
-  if(lensMode==='symbolic')return symbolicResult?.chart?`传统符号镜头 · 四柱 ${symbolicResult.chart.bazi.pillars.join(' ')}；它与这一幕没有可证的因果关系。`:'传统符号镜头 · 没有精确命盘；不从出生信息推断这一幕。';
-  return '融合镜头 · 现实描述、自评和传统符号并列；它们不互相验证，也不支配这一幕。';
+  const scene=currentScene(),data=bridgeData(),parts=[];
+  const question=carriedQuestion();
+  if(question)parts.push(`你带来的问题：${question}`);
+  for(const group of data.groups){
+    const item=group.items[journey.chapter%Math.max(1,group.items.length)];
+    if(item)parts.push(`${group.source==='symbolic'?'象征提问':group.source==='mbti'?'自选标签':'心理自评'} · ${item.question}`);
+  }
+  if(!parts.length)return '现实镜头 · 这一幕是反事实场景，并非你真实经历。';
+  return `读到“${scene.scene_title}”时，回看本幕的得到与失去。\n${parts.join('\n')}\n这些问题用于反思，不是这一幕发生的原因。`;
 }
 function renderLensContext(){
   $('story-lens-mode').value=lensMode;
   $('lens-ribbon-note').textContent=`${MODE_LABELS[lensMode]} · ${lensFlags.symbolic?'传统符号不是现实证据':'自评不预言未来'}`;
   if(sceneLensNode)sceneLensNode.textContent=lensAnnotation();
+  if(journey.phase==='fork')renderDecisionBridge();
+  for(const id of ['conversation-reflection','epilogue-reflection-question']){const text=carriedQuestion();$(id).hidden=!text;$(id).textContent=text?`你从岔路口带来的问题：${text} 走到这里，你想怎样回答？`:'';}
 }
 function setLensMode(mode){lensMode=mode;lensFlags=activeLenses(mode);if(journey.phase==='mirror')renderMirrors();if(story)selfRecords=assembleSelfModel({reality:inputValues.background,score:scoreMiniIpip(psychAnswers),mbti:$('mbti-type').value,birth:birthValues(),chart:symbolicResult?.chart}).concat(tagNarrativeEvidence({input:inputValues,story,mode:lensMode}));renderLensContext();}
 function updateLensFlag(name,value){lensMode='custom';lensFlags={...lensFlags,[name]:value};renderMirrors();renderLensContext();}
@@ -116,7 +174,7 @@ function splitNarrative(text){const sentences=String(text).match(/[^。！？]+[
 function revealParagraphs(container,text,{start=200,step=420}={}){container.replaceChildren();const paragraphs=splitNarrative(text);paragraphs.forEach((part,index)=>{const p=newElement('p','narrative-paragraph',part);container.append(p);schedule(()=>p.classList.add('is-visible'),start+step*index);});return start+step*paragraphs.length;}
 function currentScene(){return story.worldlines[journey.world].scenes[journey.chapter];}
 
-function renderFork(){$('fork-original').textContent=inputValues.decision;$('fork-alternative').textContent=inputValues.alternative;const known=inputValues.known_then?`那时，你只知道：${inputValues.known_then}`:'那一天以后的事，当时还无人知道。';$('fork-context').textContent=`${known} ${MODE_LABELS[lensMode]}镜头只提供另一种解释语言，不替这个选择预言结果。`;$('fork-stage').classList.remove('is-branching');$('fork-direction').hidden=true;$('choose-change').disabled=false;}
+function renderFork(){$('fork-original').textContent=inputValues.decision;$('fork-alternative').textContent=inputValues.alternative;const known=inputValues.known_then?`那时，你只知道：${inputValues.known_then}`:'那一天以后的事，当时还无人知道。';$('fork-context').textContent=`${known} ${MODE_LABELS[lensMode]}镜头只提供另一种解释语言，不替这个选择预言结果。`;$('fork-stage').classList.remove('is-branching');$('fork-direction').hidden=true;$('choose-change').disabled=false;renderDecisionBridge();}
 function chooseChange(){if(journey.phase!=='fork')return;$('choose-change').disabled=true;$('fork-direction').hidden=false;$('fork-stage').classList.add('is-branching');schedule(()=>move('SELECT_WORLD',1),fast()?20:1100);}
 function verifyStoryContract(candidate){if(!candidate?.fork||candidate.worldlines?.length!==2||candidate.worldlines.some(line=>line.scenes?.length!==6||line.scenes.some(scene=>!scene.scene_text||!scene.causal_link||!scene.uncertainty)))throw new Error('生成的叙事结构不完整。');}
 function formWorld(){try{story=simulate(inputValues,$('dev-panel').hidden?'mock':$('backend-mode').value);selfRecords=assembleSelfModel({reality:inputValues.background,score:scoreMiniIpip(psychAnswers),mbti:$('mbti-type').value,birth:birthValues(),chart:symbolicResult?.chart}).concat(tagNarrativeEvidence({input:inputValues,story,mode:lensMode}));return true;}catch(error){showError(error.message||'故事暂时无法形成。');$('transition-caption').textContent='故事暂时无法形成，请重新选择。';$('skip-transition').textContent='返回输入';return false;}}
@@ -160,8 +218,8 @@ function renderMeeting(){const stage=$('meeting-stage');stage.classList.remove('
 function startMeeting(){if(journey.phase!=='meeting')return;$('meet-button').hidden=true;$('meeting-stage').classList.add('is-arriving');$('meeting-setting').textContent=`◎ ${story.meeting.setting}`;schedule(()=>$('meeting-setting').hidden=false,fast()?20:800);schedule(()=>{$('meeting-scene').hidden=false;const finish=revealParagraphs($('meeting-scene'),story.meeting.scene,{start:100,step:fast()?30:440});schedule(()=>{$('meeting-words').textContent=story.meeting.first_words;$('meeting-words').hidden=false;schedule(()=>$('enter-self').hidden=false,fast()?80:1100);},finish+200);},fast()?25:1400);}
 
 function addMessage(speaker,text){const bubble=newElement('div',`message ${speaker}`,text);$('chat-messages').append(bubble);$('chat-messages').scrollTop=$('chat-messages').scrollHeight;}
-function renderConversation(){const self=story.alternate_self;$('self-city').textContent=self.current_scene;$('self-context').textContent=`${self.daily_life} ${self.work_or_study}`;$('self-understory').textContent=`${self.relationships} ${self.personality_change} ${self.unresolved_problem}`;$('chat-world').textContent=`来自 WORLD A · ${story.worldlines[1].scenes[5].time_label}`;$('chat-messages').replaceChildren();addMessage('self',story.meeting.first_words);for(const item of chats[journey.world])addMessage(item.speaker,item.text);const prompts=$('chat-prompts');prompts.replaceChildren();for(const question of story.conversation_starters){const button=newElement('button','',question);button.type='button';button.addEventListener('click',()=>sendChat(question));prompts.append(button);}}
-function sendChat(text){if(!story||!text.trim())return;try{const answer=reply(text,story.alternate_self,chats[journey.world]);chats[journey.world].push({speaker:'you',text},{speaker:'self',text:answer});journey=advance(journey,'CHAT_TURN');addMessage('you',text);addMessage('self',answer);$('chat-input').value='';}catch(error){$('chat-input').setCustomValidity(error.message);$('chat-input').reportValidity();$('chat-input').setCustomValidity('');}}
+function renderConversation(){const self=story.alternate_self;$('self-city').textContent=self.current_scene;$('self-context').textContent=`${self.daily_life} ${self.work_or_study}`;$('self-understory').textContent=`${self.relationships} ${self.personality_change} ${self.unresolved_problem}`;$('chat-world').textContent=`来自 WORLD A · ${story.worldlines[1].scenes[5].time_label}`;$('chat-messages').replaceChildren();addMessage('self',story.meeting.first_words);for(const item of chats[journey.world])addMessage(item.speaker,item.text);const prompts=$('chat-prompts');prompts.replaceChildren();for(const question of [...new Set([carriedQuestion(),...story.conversation_starters].filter(Boolean))]){const button=newElement('button','',question);button.type='button';button.addEventListener('click',()=>sendChat(question));prompts.append(button);}}
+function sendChat(text){if(!story||!text.trim())return;try{let answer=reply(text,story.alternate_self,chats[journey.world]);if(reflectionSource&&reflectionSource!=='self'&&text===carriedQuestion()){const last=story.worldlines[1].scenes[5];answer=`这个问题，我也想过。故事里的我走的是“${inputValues.alternative}”这条路。到${last.time_label}，我得到的是：${last.gain}；付出的代价是：${last.cost}。这些是这个虚构故事里的经历，不是量表或命盘替我决定的。回到你写下的“${inputValues.decision}”和“${inputValues.alternative}”，你最想保留的是什么？`;}chats[journey.world].push({speaker:'you',text},{speaker:'self',text:answer});journey=advance(journey,'CHAT_TURN');addMessage('you',text);addMessage('self',answer);$('chat-input').value='';}catch(error){$('chat-input').setCustomValidity(error.message);$('chat-input').reportValidity();$('chat-input').setCustomValidity('');}}
 
 function epilogueNode(route,index){if(route==='reality'){$('epilogue-hint').textContent=`现实起点：${story.fork.original_choice}。这只是故事中固定的选择，并不能证明另一条路。`;return;}const world=route==='A'?1:0;if(!journey.completed[world])return;move('REVISIT_SCENE',[world,index]);}
 function renderEpilogue(){$('epilogue-line').textContent=journey.completed.every(Boolean)?'你走过了两条假设的路。它们都没有替现实给出判决。':'同一个决定，还有另一种人生。';$('view-other').hidden=journey.completed.every(Boolean);$('epilogue-hint').textContent=journey.completed.every(Boolean)?'点亮的节点可以回看任一幕。':'点亮的节点可以回看。另一条路仍在远处。';epilogueTimeline.update(journey,{animate:!fast()});}
@@ -184,14 +242,16 @@ function render(){const phase=journey.phase;document.body.classList.toggle('is-l
 $('open-input').addEventListener('click',openInput);
 $('pace-immersive').addEventListener('click',()=>setPace(false));
 $('pace-quick').addEventListener('click',()=>setPace(true));
-$('restart-button').addEventListener('click',()=>{clearScheduled();chartRequest++;story=null;inputValues=null;chats=[[],[]];activeDemo=null;switchingWorld=false;lensMode='reality';lensFlags=activeLenses('reality');psychAnswers={};symbolicResult=null;selfRecords=[];form.reset();for(const select of psychSelects)select.value='';$('mbti-type').value='';for(const id of ['birth-date','birth-time','birth-place','birth-traditional-sex'])$(id).value='';$('birth-utc8').checked=false;$('chart-status').textContent='未提供出生资料；不会生成命盘。';$('landing').classList.remove('is-entering');move('RESTART');});
+$('restart-button').addEventListener('click',()=>{clearScheduled();chartRequest++;story=null;inputValues=null;chats=[[],[]];activeDemo=null;switchingWorld=false;lensMode='reality';lensFlags=activeLenses('reality');psychAnswers={};symbolicResult=null;selfRecords=[];reflectionSource=null;$('decision-reflection').value='';$('decision-focus').value='general';form.reset();for(const select of psychSelects)select.value='';$('mbti-type').value='';for(const id of ['birth-date','birth-time','birth-place','birth-traditional-sex'])$(id).value='';$('birth-utc8').checked=false;$('chart-status').textContent='未提供出生资料；不会生成命盘。';$('landing').classList.remove('is-entering');move('RESTART');});
 form.addEventListener('input',event=>{if(event.isTrusted){activeDemo=null;for(const card of $('demo-grid').querySelectorAll('button'))card.setAttribute('aria-pressed','false');}progressInput();showError('');});
 form.addEventListener('submit',event=>{event.preventDefault();const values=valuesFromForm();if(values.background.length>400){showError('请把时间和人物信息略微写短一些，总计不超过 400 字。');return;}const checked=validateInput(values);if(!checked.ok){showError(checked.error);return;}inputValues=values;syntheticDemo=Boolean(activeDemo);story=null;chats=[[],[]];showError('');move('READY');});
 for(const mode of ['reality','psychology','symbolic','fusion'])$('mode-'+mode).addEventListener('click',()=>setLensMode(mode));
 $('story-lens-mode').addEventListener('change',()=>{const selected=$('story-lens-mode').value;if(selected!=='custom')setLensMode(selected);});
 for(const [name,id] of [['reality','lens-reality'],['big-five','lens-big-five'],['mbti','lens-mbti'],['symbolic','lens-symbolic']])$(id).addEventListener('change',()=>updateLensFlag(name,$(id).checked));
-$('mbti-type').addEventListener('change',renderPsychometric);
-for(const id of ['birth-date','birth-time','birth-place','birth-traditional-sex','birth-utc8'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{chartRequest++;symbolicResult=null;$('chart-status').textContent='出生资料已改变；请重新在本机排盘。';renderSymbolicChart();renderPsychometric();});
+$('mbti-type').addEventListener('change',()=>{clearReflection('mbti');renderPsychometric();});
+$('decision-focus').addEventListener('change',()=>{renderPsychometric();renderSymbolicReading();});
+$('decision-reflection').addEventListener('input',()=>{reflectionSource='self';renderDecisionBridge();});
+for(const id of ['birth-date','birth-time','birth-place','birth-traditional-sex','birth-utc8'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{clearReflection('symbolic');chartRequest++;symbolicResult=null;$('chart-status').textContent='出生资料已改变；请重新在本机排盘。';renderSymbolicChart();renderPsychometric();});
 $('cast-chart').addEventListener('click',castChart);
 $('continue-fork').addEventListener('click',()=>move('MIRRORS_DONE'));
 $('choose-change').addEventListener('click',chooseChange);
